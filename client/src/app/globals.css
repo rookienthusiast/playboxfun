@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+:root {
+  /* Joyful Palette */
+  --joy-blue: #0ea5e9;    /* Sky Blue */
+  --joy-blue-light: #e0f2fe;
+  
+  --joy-orange: #fb923c;  /* Energetic Orange */
+  --joy-orange-light: #ffedd5;
+  
+  --joy-yellow: #facc15;  /* Gold/Coin */
+  --joy-yellow-light: #fef9c3;
+  
+  --joy-green: #4ade80;   /* Success/Growth */
+  --joy-green-light: #dcfce7;
+  
+  --joy-purple: #a78bfa;  /* Magic/Mystery */
+  --joy-purple-light: #f3e8ff;
+
+  --joy-red: #f87171;     /* Alert/Danger */
+  
+  --background: #fffbeb;  /* Warm Cream Background (not stark white) */
+  --foreground: #475569;  /* Soft Slate (not black) */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
+  --color-joy-blue: var(--joy-blue);
+  --color-joy-blue-light: var(--joy-blue-light);
+  
+  --color-joy-orange: var(--joy-orange);
+  --color-joy-orange-light: var(--joy-orange-light);
+  
+  --color-joy-yellow: var(--joy-yellow);
+  --color-joy-yellow-light: var(--joy-yellow-light);
+  
+  --color-joy-green: var(--joy-green);
+  --color-joy-green-light: var(--joy-green-light);
+  
+  --color-joy-purple: var(--joy-purple);
+  --color-joy-purple-light: var(--joy-purple-light);
+
+  --color-joy-red: var(--joy-red);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
