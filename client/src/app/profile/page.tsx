@@ -1,0 +1,133 @@
+'use client';
+
+import { useUser } from '@/context/UserContext';
+import { LogOut, Award, User as UserIcon, Monitor, Smartphone, Tablet, Edit2, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+
+export default function ProfilePage() {
+  const { user, logout, viewMode, setViewMode, updateUser } = useUser();
+  const [isEditing, setIsEditing] = useState(false);
+  const [newName, setNewName] = useState('');
+
+  if (!user) return null;
+
+  const handleEdit = () => {
+      setNewName(user.name);
+      setIsEditing(true);
+  };
+
+  const handleSaveName = () => {
+      if(newName.trim()) {
+          updateUser({ name: newName });
+          // Update local storage simple persistence
+          localStorage.setItem('playbox_user', newName); 
+      }
+      setIsEditing(false);
+  };
+
+  return (
+    <div className="pb-24 min-h-screen bg-slate-50">
+      
+      {/* HEADER */}
+      <header className="bg-white p-4 items-center flex justify-between shadow-sm sticky top-0 z-10 border-b border-slate-100">
+        <h1 className="text-xl font-bold text-slate-700">Profil Saya</h1>
+        <button onClick={logout} className="text-red-500 bg-red-50 p-2 rounded-full">
+            <LogOut size={20} />
+        </button>
+      </header>
+
+      <div className="p-6 space-y-8">
+        
+        {/* AVATAR & NAME SECTION */}
+        <div className="flex flex-col items-center relative">
+            <div className="w-28 h-28 bg-white rounded-full p-1 shadow-lg border-4 border-joy-blue mb-4 relative group cursor-pointer">
+                <div className="w-full h-full bg-slate-200 rounded-full overflow-hidden">
+                    <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${user.avatarId}`} alt="Avatar" />
+                </div>
+                {/* Edit Avatar Badge (Visual Only) */}
+                <div className="absolute bottom-0 right-0 bg-joy-orange text-white p-2 rounded-full border-2 border-white shadow-sm">
+                    <Edit2 size={14} />
+                </div>
+            </div>
+
+            {isEditing ? (
+                <div className="flex items-center gap-2 mb-2">
+                    <input 
+                        type="text" 
+                        value={newName} 
+                        onChange={(e) => setNewName(e.target.value)}
+                        className="bg-white border-2 border-joy-blue rounded-lg px-3 py-1 text-lg font-bold text-center w-48 focus:outline-none"
+                    />
+                    <button onClick={handleSaveName} className="bg-joy-green text-white p-2 rounded-lg">
+                        <Check size={18} />
+                    </button>
+                </div>
+            ) : (
+                 <div className="flex items-center gap-2 mb-2">
+                    <h2 className="text-2xl font-bold text-slate-700">{user.name}</h2>
+                    <button onClick={handleEdit} className="text-slate-400 hover:text-joy-blue">
+                        <Edit2 size={16} />
+                    </button>
+                 </div>
+            )}
+            
+            <p className="text-slate-400 font-medium">Level {user.level} Explorer</p>
+        </div>
+
+        {/* STATS CARDS */}
+        <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center">
+                <div className="w-10 h-10 bg-joy-yellow/10 text-joy-yellow rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Award size={20} />
+                </div>
+                <div className="text-xl font-bold text-slate-700">{user.xp}</div>
+                <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total XP</div>
+            </div>
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center">
+                <div className="w-10 h-10 bg-joy-green/10 text-joy-green rounded-full flex items-center justify-center mx-auto mb-2">
+                    <UserIcon size={20} />
+                </div>
+                <div className="text-xl font-bold text-slate-700">{user.unlockedAvatars.length}</div>
+                <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">Avatar</div>
+            </div>
+        </div>
+
+        {/* SETTINGS SECTION (View Mode) */}
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+            <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
+                Pengaturan Tampilan
+            </h3>
+            
+            <div className="grid grid-cols-3 gap-2">
+                <button 
+                    onClick={() => setViewMode('mobile')}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${viewMode === 'mobile' ? 'border-joy-blue bg-joy-blue/5 text-joy-blue' : 'border-slate-100 text-slate-400'}`}
+                >
+                    <Smartphone size={24} />
+                    <span className="text-xs font-bold">HP</span>
+                </button>
+                <button 
+                    onClick={() => setViewMode('tablet')}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${viewMode === 'tablet' ? 'border-joy-blue bg-joy-blue/5 text-joy-blue' : 'border-slate-100 text-slate-400'}`}
+                >
+                    <Tablet size={24} />
+                    <span className="text-xs font-bold">Tablet</span>
+                </button>
+                <button 
+                    onClick={() => setViewMode('desktop')}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${viewMode === 'desktop' ? 'border-joy-blue bg-joy-blue/5 text-joy-blue' : 'border-slate-100 text-slate-400'}`}
+                >
+                    <Monitor size={24} />
+                    <span className="text-xs font-bold">Laptop</span>
+                </button>
+            </div>
+            <p className="text-xs text-slate-400 mt-3 text-center">
+                Ubah ukuran tampilan aplikasi agar pas di layarmu.
+            </p>
+        </div>
+
+      </div>
+    </div>
+  );
+}

@@ -1,51 +1,28 @@
 @import "tailwindcss";
 
-:root {
-  /* Joyful Palette */
-  --joy-blue: #0ea5e9;    /* Sky Blue */
-  --joy-blue-light: #e0f2fe;
-  
-  --joy-orange: #fb923c;  /* Energetic Orange */
-  --joy-orange-light: #ffedd5;
-  
-  --joy-yellow: #facc15;  /* Gold/Coin */
-  --joy-yellow-light: #fef9c3;
-  
-  --joy-green: #4ade80;   /* Success/Growth */
-  --joy-green-light: #dcfce7;
-  
-  --joy-purple: #a78bfa;  /* Magic/Mystery */
-  --joy-purple-light: #f3e8ff;
+@theme {
+  /* Joyful Palette for Kids App */
+  --color-joy-blue: #3B82F6;
+  --color-joy-blue-light: #EFF6FF;
+  --color-joy-orange: #F97316;
+  --color-joy-orange-light: #FFF7ED;
+  --color-joy-yellow: #FACC15;
+  --color-joy-yellow-light: #FEFCE8;
+  --color-joy-green: #22C55E;
+  --color-joy-green-light: #F0FDF4;
+  --color-joy-purple: #8B5CF6;
+  --color-joy-purple-light: #F5F3FF;
+  --color-joy-red: #EF4444;
 
-  --joy-red: #f87171;     /* Alert/Danger */
-  
-  --background: #fffbeb;  /* Warm Cream Background (not stark white) */
-  --foreground: #475569;  /* Soft Slate (not black) */
+  --font-fredoka: var(--font-fredoka); 
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  
-  --color-joy-blue: var(--joy-blue);
-  --color-joy-blue-light: var(--joy-blue-light);
-  
-  --color-joy-orange: var(--joy-orange);
-  --color-joy-orange-light: var(--joy-orange-light);
-  
-  --color-joy-yellow: var(--joy-yellow);
-  --color-joy-yellow-light: var(--joy-yellow-light);
-  
-  --color-joy-green: var(--joy-green);
-  --color-joy-green-light: var(--joy-green-light);
-  
-  --color-joy-purple: var(--joy-purple);
-  --color-joy-purple-light: var(--joy-purple-light);
-
-  --color-joy-red: var(--joy-red);
-}
-
+/* Custom Utilities if needed */
 body {
-  background: var(--background);
-  color: var(--foreground);
+  font-family: var(--font-fredoka), sans-serif;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }

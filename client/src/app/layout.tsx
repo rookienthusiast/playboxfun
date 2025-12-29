@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Fredoka } from "next/font/google";
+import { Fredoka } from "next/font/google"; 
 import "./globals.css";
+import ClientLayout from "./ClientLayout";
 
 const fredoka = Fredoka({
   subsets: ["latin"],
@@ -20,13 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body className={`${fredoka.variable} font-sans antialiased text-slate-700`} suppressHydrationWarning>
-        <div className="min-h-screen bg-[url('/bg-pattern.png')] bg-joy-orange-light/30">
-             {/* Mobile-first centered container */}
-            <main className="max-w-md mx-auto min-h-screen bg-white shadow-2xl relative overflow-hidden">
-                {children}
-            </main>
-        </div>
+      <body className={`${fredoka.variable} font-sans antialiased text-slate-700 bg-slate-100`} suppressHydrationWarning>
+        <ClientLayout>
+            {children}
+        </ClientLayout>
       </body>
     </html>
   );

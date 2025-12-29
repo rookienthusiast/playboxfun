@@ -1,52 +1,61 @@
-export type Title = {
-  id: string;
+export interface User {
   name: string;
-  minBalance: number;
-  color: string; // Tailwind color class for badge
+  balance: number;
+  xp: number; // Experience Points for Leveling
+  level: number; // Derived from XP (e.g. XP / 100)
+  puzzlePieces: number;
+  avatarId: string; // E.g., 'cat', 'dog' WITHOUT suffix
+  unlockedAvatars: string[];
+}
+
+export const MOCK_USER: User = {
+  name: "Jojo",
+  balance: 75000, 
+  xp: 150, 
+  level: 1, // Will be calculated dynamically usually
+  puzzlePieces: 5,
+  avatarId: "cat",
+  unlockedAvatars: ["cat", "dog"],
 };
 
-export const TITLES: Title[] = [
-  { id: 't1', name: '🌱 Penabung Pemula', minBalance: 0, color: 'bg-joy-green text-white' },
-  { id: 't2', name: '🐝 Penabung Rajin', minBalance: 100000, color: 'bg-joy-blue text-white' },
-  { id: 't3', name: '🚀 Penabung Cerdas', minBalance: 500000, color: 'bg-joy-purple text-white' },
-  { id: 't4', name: '👑 Sultan Cilik', minBalance: 1000000, color: 'bg-joy-yellow text-white' },
+// Evolution Config
+export const EVOLUTION_STAGES = [
+    { name: 'Baby', minBalance: 0, suffix: '_baby' },
+    { name: 'Teen', minBalance: 100000, suffix: '_teen' },
+    { name: 'King', minBalance: 300000, suffix: '_king' }
 ];
 
-export type User = {
-  id: string;
-  name: string;
-  level: number;
-  balance: number; // in IDR
-  stars: number; // Current XP/Progress to next level
-  maxStars: number; // XP needed for next level
-  puzzlePieces: number; // Currency for store
-  avatarId: string;
-  unlockedAvatars: string[];
+// Helper to get current evolution stage seed for DiceBear
+export const getAvatarSeed = (avatarId: string, balance: number) => {
+    // Stage logic: Reverse check to find largest qualifier
+    const stage = [...EVOLUTION_STAGES].reverse().find(s => balance >= s.minBalance) || EVOLUTION_STAGES[0];
+    
+    // DiceBear Adventurer seeds are text-based. 
+    // We combine avatarId + suffix to create unique "Evolved" look.
+    // e.g. "cat" -> "cat_baby", "cat_teen"
+    return `${avatarId}${stage.suffix}`; 
 };
 
-// INITIAL DUMMY USER
-export const MOCK_USER: User = {
-  id: 'u1',
-  name: 'Jojo',
-  level: 2,
-  balance: 850000,
-  stars: 3,
-  maxStars: 5,
-  puzzlePieces: 12,
-  avatarId: 'cat_warrior',
-  unlockedAvatars: ['cat_warrior', 'dog_detective'],
-};
+export const getEvolutionName = (balance: number) => {
+    const stage = [...EVOLUTION_STAGES].reverse().find(s => balance >= s.minBalance) || EVOLUTION_STAGES[0];
+    return stage.name;
+}
 
 export const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
     minimumFractionDigits: 0,
   }).format(amount);
 };
 
+export const TITLES = [
+  { name: 'Pemula', minBalance: 0 },
+  { name: 'Penabung Cilik', minBalance: 50000 },
+  { name: 'Juragan Muda', minBalance: 200000 },
+  { name: 'Sultan', minBalance: 1000000 },
+];
+
 export const getCurrentTitle = (balance: number) => {
-  // Find the highest title where balance >= minBalance
-  const sortedTitles = [...TITLES].sort((a, b) => b.minBalance - a.minBalance);
-  return sortedTitles.find(t => balance >= t.minBalance) || TITLES[TITLES.length-1];
+    return [...TITLES].reverse().find(t => balance >= t.minBalance) || TITLES[0];
 };

@@ -1,23 +1,18 @@
 'use client';
 
-import { MOCK_USER, getCurrentTitle, formatCurrency } from '@/data/mock';
-import { ArrowLeft, Share2, Copy, History, TrendingUp, TrendingDown } from 'lucide-react';
-import Link from 'next/link';
+import { getCurrentTitle, formatCurrency } from '@/data/mock';
+import { Share2, Copy } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useUser } from '@/context/UserContext'; // Use Context
 
 export default function ReportPage() {
-  const user = MOCK_USER;
-  const currentTitle = getCurrentTitle(user.balance);
+  const { user } = useUser();
   const [copied, setCopied] = useState(false);
 
-  // Dummy Transaction Data
-  const transactions = [
-    { id: 1, type: 'in', date: '12 Des', note: 'Uang Saku', amount: 5000 },
-    { id: 2, type: 'in', date: '10 Des', note: 'Hadiah Nenek', amount: 20000 },
-    { id: 3, type: 'out', date: '08 Des', note: 'Beli Jajan', amount: 2000 },
-    { id: 4, type: 'in', date: '05 Des', note: 'Sisa Belanja', amount: 1500 },
-  ];
+  if (!user) return null;
+
+  const currentTitle = getCurrentTitle(user.balance);
 
   // Generate WhatsApp Message
   const getWAMessage = () => {
@@ -58,82 +53,62 @@ _Powered by PlayBox Fun 🚀_`;
   return (
     <div className="pb-24 min-h-screen bg-slate-50">
       {/* HEADER */}
-      <header className="bg-white p-4 items-center flex gap-4 shadow-sm sticky top-0 z-10">
-        <Link href="/">
-           <button className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-             <ArrowLeft size={24} className="text-slate-600" />
-           </button>
-        </Link>
-        <h1 className="text-xl font-bold text-slate-700">Laporan</h1>
+      <header className="bg-white p-4 items-center flex gap-4 shadow-sm sticky top-0 z-10 border-b border-slate-100">
+        <div className="bg-joy-green-light p-2 rounded-full text-joy-green">
+             <Share2 size={24} />
+        </div>
+        <h1 className="text-xl font-bold text-slate-700">Laporan Orang Tua</h1>
       </header>
 
-      <div className="p-6 space-y-8">
+      <div className="p-6 space-y-6">
         
-        {/* SECTION 1: WHATSAPP PREVIEW CARD */}
+        {/* SECTION: WHATSAPP PREVIEW CARD */}
         <section>
-            <div className="flex items-center gap-2 mb-3 text-slate-500 text-sm font-semibold">
-                <Share2 size={16} />
-                <h3>Preview Laporan Orang Tua</h3>
+            <div className="bg-white p-6 rounded-3xl shadow-lg border border-slate-100 text-center mb-6">
+                <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${user.avatarId}`} className="w-20 h-20 mx-auto rounded-full bg-slate-50 mb-4" alt="avatar"/>
+                <h2 className="text-lg font-bold text-slate-700">Laporan Siap Dikirim!</h2>
+                <p className="text-slate-400 text-sm">Bagikan progres menabungmu kepaada orang tua atau guru.</p>
+            </div>
+
+            <div className="flex items-center gap-2 mb-3 text-slate-500 text-sm font-semibold px-2">
+                <span>Preview Pesan:</span>
             </div>
             
             {/* The WhatsApp Bubble Look */}
             <motion.div 
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="bg-[#dcf8c6] p-4 rounded-lg rounded-tl-none shadow-md border border-green-200 relative text-sm font-mono text-slate-800 leading-relaxed whitespace-pre-wrap"
+                whileHover={{ scale: 1.02 }}
+                onClick={handleCopy}
+                className="bg-[#dcf8c6] p-4 rounded-xl rounded-tl-none shadow-sm border border-green-200 relative text-sm font-mono text-slate-800 leading-relaxed whitespace-pre-wrap cursor-pointer"
             >
                 {getWAMessage()}
                 
                 {/* Time stamp simulation */}
                 <div className="text-[10px] text-slate-500 text-right mt-2 flex justify-end gap-1">
-                    <span>16:45</span>
+                    <span>Just now</span>
                     <span>✓✓</span>
                 </div>
             </motion.div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 mt-4">
-                <button 
+            <div className="flex gap-3 mt-6">
+                <motion.button 
+                    whileTap={{ scale: 0.95 }}
                     onClick={handleCopy}
-                    className="flex-1 bg-white border border-slate-300 py-3 rounded-xl font-bold text-slate-600 shadow-sm active:scale-95 transition-transform flex justify-center items-center gap-2"
+                    className="flex-1 bg-white border border-slate-300 py-4 rounded-xl font-bold text-slate-600 shadow-sm transition-transform flex justify-center items-center gap-2"
                 >
-                    <Copy size={18} />
-                    {copied ? 'Tersalin!' : 'Salin Teks'}
-                </button>
-                <button 
+                    <Copy size={20} />
+                    {copied ? 'Tersalin!' : 'Salin'}
+                </motion.button>
+                <motion.button 
+                    whileTap={{ scale: 0.95 }}
                     onClick={handleShareWA}
-                    className="flex-1 bg-[#25D366] text-white py-3 rounded-xl font-bold shadow-lg shadow-green-200 active:scale-95 transition-transform flex justify-center items-center gap-2"
+                    className="flex-[2] bg-[#25D366] text-white py-4 rounded-xl font-bold shadow-lg shadow-green-200 transition-transform flex justify-center items-center gap-2"
                 >
-                    <Share2 size={18} />
-                    Kirim WA
-                </button>
-            </div>
-        </section>
-
-        {/* SECTION 2: TRANSACTION HISTORY */}
-        <section>
-             <div className="flex items-center gap-2 mb-4 text-slate-500 text-sm font-semibold">
-                <History size={16} />
-                <h3>Riwayat Mutasi</h3>
-            </div>
-
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                {transactions.map((trx, i) => (
-                    <div key={trx.id} className={`flex items-center justify-between p-4 ${i !== transactions.length - 1 ? 'border-b border-slate-50' : ''}`}>
-                        <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${trx.type === 'in' ? 'bg-joy-green-light text-joy-green' : 'bg-joy-red/10 text-joy-red'}`}>
-                                {trx.type === 'in' ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
-                            </div>
-                            <div>
-                                <p className="font-bold text-slate-700">{trx.note}</p>
-                                <p className="text-xs text-slate-400">{trx.date}</p>
-                            </div>
-                        </div>
-                        <span className={`font-bold ${trx.type === 'in' ? 'text-joy-green' : 'text-slate-500'}`}>
-                            {trx.type === 'in' ? '+' : '-'}{formatCurrency(trx.amount)}
-                        </span>
-                    </div>
-                ))}
+                    <Share2 size={20} />
+                    Kirim ke WhatsApp
+                </motion.button>
             </div>
         </section>
 
