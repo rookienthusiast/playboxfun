@@ -1,4 +1,4 @@
-# 🎮 PlayBox Fun
+# 🎮 Playfunbox
 
 Aplikasi gamifikasi tabungan untuk anak-anak (Usia 6-12 Tahun) agar rajin menabung dengan cara yang menyenangkan!
 
@@ -36,7 +36,7 @@ Jika Backend sudah dikembangkan:
 2. Jalankan keduanya:
 
 ```bash
-# Dari root folder 'playboxfun'
+# Dari root folder 'playfunbox'
 npm run dev
 ```
 Perintah ini akan menjalankan Frontend (Port 3000) dan Backend (Port 4000) secara bersamaan menggunakan `concurrently`.

@@ -36,7 +36,7 @@ Puzzle: ${user.puzzlePieces} keping
 ✨ _Terus semangat menabung, ${user.name}!_ ✨
 
 ---------------------------
-_Powered by PlayBox Fun 🚀_`;
+_Powered by PlayFunBox 🚀_`;
   };
 
   const handleCopy = () => {

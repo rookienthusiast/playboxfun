@@ -51,7 +51,7 @@ export default function LoginPage() {
                 <Rocket size={40} className="text-white transform -rotate-45" />
             </div>
 
-            <h1 className="text-3xl font-black text-joy-blue mb-2 tracking-tight">PlayBox Fun!</h1>
+            <h1 className="text-3xl font-black text-joy-blue mb-2 tracking-tight">PlayFunBox!</h1>
             <p className="text-slate-500 text-sm font-medium mb-8">Siap jadi pahlawan tabungan?</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -112,7 +112,7 @@ export default function LoginPage() {
         </motion.div>
 
         <p className="mt-8 text-white/60 text-xs text-center relative z-10 font-medium">
-            PlayBox Fun © 2025<br/>Belajar menabung sejak dini
+            PlayFunBox © 2025<br/>Belajar menabung sejak dini
         </p>
     </div>
   );
