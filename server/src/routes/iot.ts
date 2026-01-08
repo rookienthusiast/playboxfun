@@ -1,47 +1,47 @@
 import { Router, Request, Response } from 'express';
-import { prisma } from '../lib/prisma'; // Sesuaikan path ke file prisma.ts Ndan
+import { prisma } from '../lib/prisma';
 import { Prisma } from '@prisma/client';
 
 const router = Router();
 
-// Endpoint: POST /api/iot/money-in
 router.post('/money-in', async (req: Request, res: Response) => {
+  const { uid, amount_rp, deviceId } = req.body;
+
   try {
-    const { uid, amount_rp, method, event_uuid, deviceId } = req.body;
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Cari kartu
+      const card = await tx.userCard.findUnique({
+        where: { uid },
+        include: { user: true }
+      });
 
-    // 1. Cari Kartu & User
-    const card = await prisma.userCard.findUnique({
-      where: { uid },
-      include: { user: true }
-    });
+      // Validasi ketat untuk TS: pastikan card dan userId tidak null
+      if (!card || !card.userId || !card.user) {
+        throw new Error("Kartu tidak valid atau belum terhubung ke user");
+      }
 
-    if (!card || !card.user) {
-      return res.status(404).json({ message: "Kartu tidak terdaftar" });
-    }
+      // 2. Tambah saldo (Pastikan npx prisma generate sudah dijalankan)
+      const updatedUser = await tx.user.update({
+        where: { id: card.userId },
+        data: { 
+          balance: { increment: Number(amount_rp) } 
+        } as any // Gunakan 'as any' sementara jika TS masih bandel sebelum restart
+      });
 
-    // 2. Transaksi Prisma
-    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      // 3. Catat history (Sesuaikan dengan field wajib di skema Ndan saat ini)
       return await tx.moneyInEvent.create({
         data: {
-          event_uuid: event_uuid || `auto-${Date.now()}`,
           deviceId: deviceId || "DEV-01",
           userId: card.userId,
-          method: method || "UNKNOWN",
           amount_rp: Number(amount_rp),
-          saldo_before: 0,
-          saldo_after: 0,
+          saldo_after: (updatedUser as any).balance || 0
         }
       });
     });
 
-    return res.status(200).json({ 
-      status: "Berhasil", 
-      message: `Tabungan ${card.user.name} masuk` 
-    });
-
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    res.json({ message: `Saldo masuk Rp${amount_rp}` });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || "Unknown error" });
   }
 });
 

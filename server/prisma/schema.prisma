@@ -9,153 +9,26 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  name  String  // Nama anak (misal: "Budi Kelas 2A")
-  // email String? // Buat opsional atau hapus saja
+  id        Int      @id @default(autoincrement())
+  name      String   // Nama anak (misal: "Budi")
+  balance   Int      @default(0) // Saldo total anak saat ini
   
-  // Relations
-  cards         UserCard[]
-  moneyInEvents MoneyInEvent[]
-  rfidLogs       RfidLog[]          // ✅ TAMBAHAN
-  enrollEvents   EnrollEvent[]      // ✅ TAMBAHAN
-  saldoResets    SaldoResetEvent[]  // ✅ TAMBAHAN
-  
-  createdAt DateTime @default(now()) // ✅ TAMBAHAN
-  updatedAt DateTime @updatedAt      // ✅ TAMBAHAN
+  cards     UserCard[]
+  events    MoneyInEvent[]
 }
 
 model UserCard {
-  id         Int      @id @default(autoincrement())
-  uid        String   @unique
-  user       User?    @relation(fields: [userId], references: [id])
-  userId     Int?
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  replacedBy Int?
-  
-  @@index([uid])        // ✅ TAMBAHAN: untuk query cepat by UID
-  @@index([userId])     // ✅ TAMBAHAN
-}
-
-model Device {
-  id        Int      @id @default(autoincrement())
-  deviceId  String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  
-  states         DeviceState[]
-  events         MoneyInEvent[]
-  rfidLogs       RfidLog[]
-  enrollEvents   EnrollEvent[]      // ✅ TAMBAHAN
-  saldoResets    SaldoResetEvent[]  // ✅ TAMBAHAN
-}
-
-model DeviceState {
-  id                   Int      @id @default(autoincrement())
-  device               Device   @relation(fields: [deviceId], references: [deviceId]) // ✅ PERBAIKAN: relasi eksplisit
-  deviceId             String
-  
-  admin_enroll_mode    Boolean  @default(false)
-  user_card_registered Boolean  @default(false)
-  servo_state          String   @default("IDLE")
-  servo_hold_ms        Int?
-  saldo_rp             BigInt   @default(0)
-  last_add_rp          Int?
-  ir_in                Boolean  @default(false)
-  note_detected        String   @default("NONE")
-  note_add_rp          Int      @default(0)
-  coin_weight_kg       Float?
-  coin_candidate       String   @default("NONE")
-  coin_stable_count    Int      @default(0)
-  coin_add_rp          Int      @default(0)
-  rfid_tap_type        String   @default("NONE")
-  rfid_action          String?
-  
-  updatedAt            DateTime @updatedAt
-  
-  @@index([deviceId, updatedAt])
+  uid       String   @id // UID dari RFID (A1B2C3D4)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
 }
 
 model MoneyInEvent {
-  id            Int      @id @default(autoincrement())
-  event_uuid    String   @unique  // idempotency
-  
-  device        Device   @relation(fields: [deviceId], references: [deviceId]) // ✅ PERBAIKAN
-  deviceId      String
-  
-  user          User?    @relation(fields: [userId], references: [id]) // ✅ PERBAIKAN
-  userId        Int?
-  
-  method        String   // "COIN" / "NOTE"
-  amount_rp     Int
-  saldo_before  BigInt
-  saldo_after   BigInt
-  
-  // Coin-specific
-  coin_weight_kg Float?
-  
-  // Note-specific
-  note_detected  String?
-  tcs_rg        Int?
-  tcs_rb        Int?
-  tcs_cE        Float?
-  
-  createdAt     DateTime @default(now())
-  
-  @@index([deviceId, createdAt])
-  @@index([userId, createdAt])
-  @@index([event_uuid])  // ✅ TAMBAHAN
-}
-
-model RfidLog {
-  id           Int      @id @default(autoincrement())
-  
-  device       Device   @relation(fields: [deviceId], references: [deviceId]) // ✅ PERBAIKAN
-  deviceId     String
-  
-  uid          String? 
-  rfid_tap_type String  // "NONE" / "ADMIN" / "USER" / "OTHER"
-  rfid_action   String? // "LOCK" / "UNLOCK" / etc
-  
-  user         User?    @relation(fields: [userId], references: [id]) // ✅ PERBAIKAN
-  userId       Int?
-  
-  createdAt    DateTime @default(now())
-  
-  @@index([deviceId, createdAt])
-  @@index([uid])  // ✅ TAMBAHAN
-}
-
-model EnrollEvent {
   id          Int      @id @default(autoincrement())
-  
-  device      Device   @relation(fields: [deviceId], references: [deviceId]) // ✅ PERBAIKAN
-  deviceId    String
-  
-  uid         String?
-  
-  user        User?    @relation(fields: [userId], references: [id]) // ✅ PERBAIKAN
-  userId      Int?
-  
-  hasUserCard Boolean
+  deviceId    String   // ID Mesin (KUCING-01)
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  amount_rp   Int      // Uang yang barusan dimasukkan
+  saldo_after Int      // Total saldo setelah uang masuk (untuk audit)
   createdAt   DateTime @default(now())
-  
-  @@index([deviceId, createdAt])
-}
-
-model SaldoResetEvent {
-  id           Int      @id @default(autoincrement())
-  
-  device       Device   @relation(fields: [deviceId], references: [deviceId]) // ✅ PERBAIKAN
-  deviceId     String
-  
-  user         User?    @relation(fields: [userId], references: [id]) // ✅ PERBAIKAN
-  userId       Int?
-  
-  saldo_before BigInt
-  saldo_after  BigInt  @default(0)
-  createdAt    DateTime @default(now())
-  
-  @@index([deviceId, createdAt])
-  @@index([userId])  // ✅ TAMBAHAN
 }
