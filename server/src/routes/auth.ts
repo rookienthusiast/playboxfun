@@ -1,0 +1,59 @@
+import express, { Request, Response } from 'express';
+import { prisma } from '../lib/prisma';
+
+const router = express.Router();
+
+// Endpoint Login by UID
+// POST /api/auth/login
+// Body: { "uid": "CARD-JOJO-01" }
+router.post('/login', async (req: Request, res: Response) => {
+  const { uid } = req.body;
+
+  if (!uid) {
+    return res.status(400).json({ error: 'UID is required' });
+  }
+
+  try {
+    // 1. Cari kartu berdasarkan UID
+    const card = await prisma.userCard.findUnique({
+      where: { uid: uid },
+      include: {
+        user: {
+            include: {
+                avatars: true 
+            }
+        } 
+      },
+    });
+
+    // 2. Jika kartu tidak ditemukan
+    if (!card) {
+      return res.status(404).json({ error: 'Kartu tidak terdaftar' });
+    }
+
+    // 3. Jika ketemu, kembalikan data user
+    // Kita format sedikit biar rapi
+    const userData = {
+      id: card.user.id,
+      name: card.user.name,
+      balance: card.user.balance,
+      cardUid: card.uid,
+      // Gamification Data
+      xp: card.user.xp,
+      puzzlePieces: card.user.puzzlePieces,
+      avatarId: card.user.currentAvatar,
+      unlockedAvatars: card.user.avatars.map(a => a.avatarId), 
+    };
+
+    return res.json({
+        success: true,
+        user: userData
+    });
+
+  } catch (error) {
+    console.error('Login Error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+export default router;

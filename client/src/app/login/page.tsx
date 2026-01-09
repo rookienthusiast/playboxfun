@@ -2,27 +2,52 @@
 
 import { useState } from 'react';
 import { useUser } from '@/context/UserContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Rocket, CheckCircle } from 'lucide-react';
-import { getAvatarSeed } from '@/data/mock';
+import { motion } from 'framer-motion';
+import { Sparkles, Rocket, CreditCard, ScanLine, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
-  const [name, setName] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState('cat');
+  const [uid, setUid] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const { login } = useUser();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) {
-      login(name, selectedAvatar);
+    if (!uid.trim()) return;
+
+    setIsLoading(true);
+    setErrorMsg('');
+
+    try {
+        // 1. Tembak API Login (Hardcoded localhost for dev)
+        // Di Real project, URL ini harusnya dari environment variable
+        const response = await fetch('http://localhost:4000/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ uid: uid }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            // 2. Login Sukses -> Masuk ke App
+            // Kirim data user asli dari DB ke context
+            // Kita perlu menyesuaikan UserContext agar menerima objek User lengkap dari DB
+            login(data.user);
+        } else {
+            // Login Gagal
+            setErrorMsg(data.error || 'Login gagal. Coba lagi.');
+        }
+
+    } catch (err) {
+        console.error(err);
+        setErrorMsg('Gagal terhubung ke server. Pastikan server nyala.');
+    } finally {
+        setIsLoading(false);
     }
   };
-
-  const STARTER_AVATARS = [
-      { id: 'cat', name: 'Kucing' },
-      { id: 'dog', name: 'Anjing' },
-      { id: 'bear', name: 'Beruang' },
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-joy-blue to-joy-purple flex flex-col items-center justify-center p-8 relative overflow-hidden">
@@ -35,84 +60,76 @@ export default function LoginPage() {
         >
             <Sparkles size={60} />
         </motion.div>
-        <motion.div 
-            animate={{ rotate: 360 }}
-            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-            className="absolute -bottom-20 -right-20 w-[400px] h-[400px] bg-white/5 rounded-full border-4 border-white/10 border-dashed"
-        />
-
+        
+        {/* LOGIN CARD */}
         <motion.div 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="bg-white/90 backdrop-blur-xl p-8 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-sm relative z-10 text-center border-4 border-white/50"
         >
-            {/* Header Icon */}
-            <div className="w-24 h-24 bg-gradient-to-tr from-joy-yellow to-orange-400 rounded-full mx-auto -mt-20 mb-6 flex items-center justify-center border-8 border-joy-blue shadow-lg">
-                <Rocket size={40} className="text-white transform -rotate-45" />
+            {/* Header Icon - Ganti jadi Kartu */}
+            <div className="w-24 h-24 bg-gradient-to-tr from-joy-purple to-pink-500 rounded-full mx-auto -mt-20 mb-6 flex items-center justify-center border-8 border-joy-blue shadow-lg">
+                <CreditCard size={40} className="text-white transform -rotate-12" />
             </div>
 
-            <h1 className="text-3xl font-black text-joy-blue mb-2 tracking-tight">PlayFunBox!</h1>
-            <p className="text-slate-500 text-sm font-medium mb-8">Siap jadi pahlawan tabungan?</p>
+            <h1 className="text-3xl font-black text-joy-blue mb-2 tracking-tight">Tap & Play!</h1>
+            <p className="text-slate-500 text-sm font-medium mb-8">Masuk dengan Kartu Ajaibmu ✨</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 
-                {/* Avatar Selection */}
-                <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Pilih Temanmu</label>
-                    <div className="flex justify-center gap-4">
-                        {STARTER_AVATARS.map((av) => {
-                            const isSelected = selectedAvatar === av.id;
-                            return (
-                                <motion.div 
-                                    key={av.id}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => setSelectedAvatar(av.id)}
-                                    className={`relative cursor-pointer transition-all ${isSelected ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
-                                >
-                                    <div className={`w-16 h-16 rounded-full overflow-hidden border-4 shadow-sm ${isSelected ? 'border-joy-orange ring-4 ring-joy-orange/20' : 'border-slate-200'}`}>
-                                        <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${getAvatarSeed(av.id, 0)}`} alt={av.name} />
-                                    </div>
-                                    {isSelected && (
-                                        <div className="absolute -bottom-1 -right-1 bg-joy-green text-white rounded-full p-0.5 border-2 border-white">
-                                            <CheckCircle size={12} strokeWidth={4} />
-                                        </div>
-                                    )}
-                                </motion.div>
-                            )
-                        })}
-                    </div>
-                </div>
-
-                {/* Name Input */}
+                {/* UID Input */}
                 <div className="text-left space-y-2">
-                    <label className="text-xs font-bold text-slate-500 ml-2">Siapa Namamu?</label>
+                    <label className="text-xs font-bold text-slate-500 ml-2">Nomor Kartu (UID)</label>
                     <div className="relative">
+                        <div className="absolute left-4 top-4 text-slate-400">
+                             <ScanLine size={20} />
+                        </div>
                         <input 
                             type="text" 
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Contoh: Jojo"
-                            className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-4 font-bold text-xl text-slate-700 focus:outline-none focus:border-joy-blue focus:ring-4 focus:ring-joy-blue/10 transition-all placeholder:font-normal placeholder:text-slate-300 text-center"
-                            maxLength={15}
+                            value={uid}
+                            onChange={(e) => setUid(e.target.value)}
+                            placeholder="Contoh: CARD-JOJO-01"
+                            className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl pl-12 pr-5 py-4 font-bold text-lg text-slate-700 focus:outline-none focus:border-joy-blue focus:ring-4 focus:ring-joy-blue/10 transition-all placeholder:font-normal placeholder:text-slate-300"
                             required
                         />
                     </div>
                 </div>
 
+                {/* Error Message */}
+                {errorMsg && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-3 bg-red-100 text-red-600 text-xs font-bold rounded-xl border border-red-200"
+                    >
+                        ⛔ {errorMsg}
+                    </motion.div>
+                )}
+
                 <motion.button 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     type="submit"
-                    className="w-full bg-gradient-to-r from-joy-blue to-joy-purple text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-200 flex items-center justify-center gap-2 text-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all"
+                    disabled={isLoading}
+                    className="w-full bg-gradient-to-r from-joy-blue to-joy-purple text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-200 flex items-center justify-center gap-2 text-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all disabled:opacity-70 disabled:grayscale"
                 >
-                    <Sparkles size={20} />
-                    Mulai Petualangan
+                    {isLoading ? (
+                        <>
+                            <Loader2 className="animate-spin" />
+                            Mengecek...
+                        </>
+                    ) : (
+                        <>
+                            <Rocket size={20} />
+                            Masuk Sekarang
+                        </>
+                    )}
                 </motion.button>
             </form>
         </motion.div>
 
         <p className="mt-8 text-white/60 text-xs text-center relative z-10 font-medium">
-            PlayFunBox © 2025<br/>Belajar menabung sejak dini
+            Gunakan Kartu RFID yang sudah terdaftar<br/>di mesin PlayBox Fun
         </p>
     </div>
   );

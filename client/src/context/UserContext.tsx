@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 interface UserContextType {
   user: User | null;
-  login: (name: string, avatarId?: string) => void;
+  login: (userData: any) => void;
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
   isLoggedIn: boolean;
@@ -22,22 +22,42 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    const storedName = localStorage.getItem('playbox_user');
+
     // Load viewMode from local storage if exists
     const storedViewMode = localStorage.getItem('playbox_view_mode') as 'mobile' | 'tablet' | 'desktop';
     if (storedViewMode) setViewMode(storedViewMode);
 
-    if (storedName) {
-        const storedAvatar = localStorage.getItem('playbox_avatar') || 'cat';
-        setUser({ ...MOCK_USER, name: storedName, avatarId: storedAvatar });
+    const storedUser = localStorage.getItem('playbox_user');
+    if (storedUser) {
+        try {
+            const parsed = JSON.parse(storedUser);
+            // Check if it's new object format or old string format
+            if (typeof parsed === 'object') {
+                setUser(parsed);
+            } else {
+                setUser({ ...MOCK_USER, name: storedUser });
+            }
+        } catch (e) {
+             // Fallback for old simple string
+             setUser({ ...MOCK_USER, name: storedUser });
+        }
     }
   }, []);
 
-  const login = (name: string, avatarId: string = 'cat') => {
-    const newUser = { ...MOCK_USER, name: name, avatarId: avatarId };
-    setUser(newUser);
-    localStorage.setItem('playbox_user', name);
-    localStorage.setItem('playbox_avatar', avatarId);
+  // Updated login function to accept full user data from API
+  const login = (userData: any) => {
+    // Merge API data with mock default structure (to keep xp/level logic working)
+    const mergedUser = { 
+        ...MOCK_USER, 
+        ...userData,
+        // Ensure critical fields exist if API doesn't send them yet
+        xp: userData.xp || 0,
+        puzzlePieces: userData.puzzlePieces || 0,
+        avatarId: userData.avatarId || 'cat'
+    };
+    
+    setUser(mergedUser);
+    localStorage.setItem('playbox_user', JSON.stringify(mergedUser)); // Save full object
     router.push('/');
   };
 

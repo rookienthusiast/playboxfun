@@ -3,8 +3,11 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 // 1. Impor prisma dari lib, jangan bikin instance baru di sini
 import { prisma } from './lib/prisma'; 
-// 2. Impor route iot yang tadi dibuat
+// 2. Impor route
 import iotRoutes from './routes/iot'; 
+import authRoutes from './routes/auth';
+import historyRoutes from './routes/history';
+import storeRoutes from './routes/store';
 
 dotenv.config();
 
@@ -14,9 +17,11 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 
-// 3. Daftarkan route IoT
-// Ini artinya semua route di iot.ts akan diawali dengan /api/iot
-app.use('/api/iot', iotRoutes);
+// 3. Daftarkan Routes
+app.use('/api/iot', iotRoutes);   // Endpoint untuk Hardware
+app.use('/api/auth', authRoutes); // Endpoint untuk Login Aplikasi
+app.use('/api/history', historyRoutes); // Endpoint History Transaksi
+app.use('/api/store', storeRoutes); // Endpoint Toko Avatar
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Express + Prisma Server is running!');

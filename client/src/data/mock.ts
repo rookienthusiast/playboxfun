@@ -1,10 +1,13 @@
 export interface User {
+  id?: number;           // ID dari Database
+  cardUid?: string;      // UID Kartu RFID
   name: string;
   balance: number;
-  xp: number; // Experience Points for Leveling
-  level: number; // Derived from XP (e.g. XP / 100)
+  xp: number; 
+  level: number; 
   puzzlePieces: number;
-  avatarId: string; // E.g., 'cat', 'dog' WITHOUT suffix
+  avatarId: string;      // Legacy (bisa dihapus nanti klo currentAvatar stabil)
+  currentAvatar?: string; // Avatar aktif dari DB
   unlockedAvatars: string[];
 }
 

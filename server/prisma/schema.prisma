@@ -13,14 +13,30 @@ model User {
   name      String   // Nama anak (misal: "Budi")
   balance   Int      @default(0) // Saldo total anak saat ini
   
+  // GAMIFICATION STATS
+  xp            Int      @default(0)     // Experience Points
+  puzzlePieces  Int      @default(0)     // Mata uang Puzzle
+  currentAvatar String   @default("cat") // ID Avatar yang dipakai (cat, dog, bear, etc)
+  
   cards     UserCard[]
   events    MoneyInEvent[]
+  avatars   UserAvatar[]     // Daftar avatar yang dimiliki
 }
 
 model UserCard {
   uid       String   @id // UID dari RFID (A1B2C3D4)
   user      User     @relation(fields: [userId], references: [id])
   userId    Int
+}
+
+model UserAvatar {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  avatarId  String   // Kode avatar: "cat", "dog", "bear"
+  unlockedAt DateTime @default(now())
+
+  @@unique([userId, avatarId]) // Satu user gaboleh punya 2 avatar "cat" yang sama
 }
 
 model MoneyInEvent {

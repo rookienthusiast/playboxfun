@@ -24,8 +24,11 @@ router.post('/money-in', async (req: Request, res: Response) => {
       const updatedUser = await tx.user.update({
         where: { id: card.userId },
         data: { 
-          balance: { increment: Number(amount_rp) } 
-        } as any // Gunakan 'as any' sementara jika TS masih bandel sebelum restart
+          balance: { increment: Number(amount_rp) },
+          // REWARD SYSTEM
+          xp: { increment: Math.floor(Number(amount_rp) / 1000) }, // 1000rp = 1 xp
+          puzzlePieces: { increment: 1 } // Setiap nabung dapet 1 puzzle (Bonus)
+        }
       });
 
       // 3. Catat history (Sesuaikan dengan field wajib di skema Ndan saat ini)
