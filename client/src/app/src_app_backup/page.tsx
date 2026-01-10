@@ -10,6 +10,11 @@ export default function Home() {
   const currentTitle = getCurrentTitle(user.balance);
   const nextTitle = TITLES.find(t => t.minBalance > user.balance);
   
+  // XP Logic (consistent with main page.tsx)
+  const xpForNextLevel = 100;
+  const currentLevelProgress = user.xp % xpForNextLevel;
+  const userLevel = Math.floor(user.xp / xpForNextLevel) + 1;
+  
   // Calculate progress to next title
   let progress = 0;
   if(nextTitle) {
@@ -64,17 +69,17 @@ export default function Home() {
             className="bg-white p-5 rounded-3xl shadow-xl border border-slate-100"
         >
             <div className="flex justify-between items-center mb-2">
-                <span className="font-bold text-slate-600">Level {user.level}</span>
+                <span className="font-bold text-slate-600">Level {userLevel}</span>
                 <div className="flex items-center gap-1 text-joy-orange font-bold text-sm">
                     <Star size={16} fill="currentColor" />
-                    <span>{user.stars}/{user.maxStars} Stars</span>
+                    <span>{currentLevelProgress}/{xpForNextLevel} XP</span>
                 </div>
             </div>
             {/* Progress Bar Container */}
             <div className="h-4 bg-slate-100 rounded-full overflow-hidden border border-slate-200 relative">
                 <motion.div 
                     initial={{ width: 0 }}
-                    animate={{ width: `${(user.stars / user.maxStars) * 100}%` }}
+                    animate={{ width: `${(currentLevelProgress / xpForNextLevel) * 100}%` }}
                     className="h-full bg-gradient-to-r from-joy-orange to-joy-yellow relative"
                 >
                      <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]" />
@@ -84,7 +89,7 @@ export default function Home() {
             {nextTitle && (
                  <p className="text-xs text-slate-400 mt-3 text-center">
                     Simpan <strong>{formatCurrency(nextTitle.minBalance - user.balance)}</strong> lagi untuk jadi <br/>
-                    <span className={`font-bold text-${nextTitle.color.split(' ')[0].replace('bg-', '')}`}>{nextTitle.name}</span>!
+                    <span className="font-bold text-joy-purple">{nextTitle.name}</span>!
                  </p>
             )}
         </motion.div>

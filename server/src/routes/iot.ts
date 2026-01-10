@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
-import { Prisma } from '@prisma/client';
 
 const router = Router();
 
@@ -37,7 +36,7 @@ router.post('/money-in', async (req: Request, res: Response) => {
           deviceId: deviceId || "DEV-01",
           userId: card.userId,
           amount_rp: Number(amount_rp),
-          saldo_after: (updatedUser as any).balance || 0
+          saldo_after: updatedUser.balance
         }
       });
     });

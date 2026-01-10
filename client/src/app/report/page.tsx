@@ -13,6 +13,11 @@ export default function ReportPage() {
   if (!user) return null;
 
   const currentTitle = getCurrentTitle(user.balance);
+  
+  // XP Logic (consistent with main page.tsx)
+  const xpForNextLevel = 100;
+  const currentLevelProgress = user.xp % xpForNextLevel;
+  const userLevel = Math.floor(user.xp / xpForNextLevel) + 1;
 
   // Generate WhatsApp Message
   const getWAMessage = () => {
@@ -24,11 +29,11 @@ export default function ReportPage() {
 
 💰 *RINGKASAN SALDO*
 Total Tabungan: ${formatCurrency(user.balance)}
-Target Level: ${user.stars}/${user.maxStars} ⭐
+XP Progress: ${currentLevelProgress}/${xpForNextLevel} XP
 
 🏅 *STATUS PENCAPAIAN*
 Title: ${currentTitle?.name}
-Level: ${user.level}
+Level: ${userLevel}
 
 🧩 *KOLEKSI*
 Puzzle: ${user.puzzlePieces} keping
