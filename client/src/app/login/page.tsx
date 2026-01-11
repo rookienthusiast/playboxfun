@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useUser } from '@/context/UserContext';
 import { motion } from 'framer-motion';
-import { Sparkles, Rocket, CreditCard, ScanLine, Loader2 } from 'lucide-react';
+import { Sparkles, Rocket, ScanLine, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [uid, setUid] = useState('');
@@ -50,7 +50,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-joy-blue to-joy-purple flex flex-col items-center justify-center p-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-joy-blue via-joy-purple to-pink-500 flex flex-col items-center justify-center p-8 relative overflow-hidden">
         
         {/* Animated Background Shapes */}
         <motion.div 
@@ -61,35 +61,74 @@ export default function LoginPage() {
             <Sparkles size={60} />
         </motion.div>
         
+        <motion.div 
+            animate={{ y: [0, 20, 0], opacity: [0.2, 0.5, 0.2] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute bottom-20 right-10 text-white opacity-15"
+        >
+            <Sparkles size={80} />
+        </motion.div>
+        
         {/* LOGIN CARD */}
         <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white/90 backdrop-blur-xl p-8 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-sm relative z-10 text-center border-4 border-white/50"
+            initial={{ scale: 0.8, opacity: 0, y: 50 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: "spring", damping: 15, stiffness: 200 }}
+            className="bg-white/95 backdrop-blur-xl p-10 rounded-[40px] shadow-[0_25px_60px_rgba(0,0,0,0.4)] w-full max-w-md relative z-10 text-center border-4 border-white/60"
         >
-            {/* Header Icon - Ganti jadi Kartu */}
-            <div className="w-24 h-24 bg-gradient-to-tr from-joy-purple to-pink-500 rounded-full mx-auto -mt-20 mb-6 flex items-center justify-center border-8 border-joy-blue shadow-lg">
-                <CreditCard size={40} className="text-white transform -rotate-12" />
-            </div>
+            {/* Logo Section */}
+            <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                className="flex justify-center -mt-24 mb-6"
+            >
+                <div className="bg-white rounded-full p-4 shadow-2xl border-4 border-joy-blue/30">
+                    <img src="/Logo_Sirupi.png" alt="Sirupi Logo" className="w-25 h-25 object-contain" />
+                </div>
+            </motion.div>
 
-            <h1 className="text-3xl font-black text-joy-blue mb-2 tracking-tight">Tap & Play!</h1>
-            <p className="text-slate-500 text-sm font-medium mb-8">Masuk dengan Kartu Ajaibmu ✨</p>
+            <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-4xl font-black bg-gradient-to-r from-joy-blue to-joy-purple bg-clip-text text-transparent mb-3 tracking-tight"
+            >
+                Sirupi
+            </motion.h1>
+            <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="text-slate-600 text-sm font-semibold mb-8"
+            >
+                Masuk dengan Kartu Ajaibmu ✨
+            </motion.p>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <motion.form 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                onSubmit={handleSubmit} 
+                className="space-y-6"
+            >
                 
                 {/* UID Input */}
-                <div className="text-left space-y-2">
-                    <label className="text-xs font-bold text-slate-500 ml-2">Nomor Kartu (UID)</label>
-                    <div className="relative">
-                        <div className="absolute left-4 top-4 text-slate-400">
-                             <ScanLine size={20} />
+                <div className="text-left space-y-3">
+                    <label className="text-sm font-bold text-slate-700 ml-3 flex items-center gap-2">
+                        <ScanLine size={16} className="text-joy-blue" />
+                        Nomor Kartu (UID)
+                    </label>
+                    <div className="relative group">
+                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-joy-blue/60 group-focus-within:text-joy-blue transition-colors">
+                             <ScanLine size={22} />
                         </div>
                         <input 
                             type="text" 
                             value={uid}
                             onChange={(e) => setUid(e.target.value)}
-                            placeholder="Contoh: CARD-JOJO-01"
-                            className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl pl-12 pr-5 py-4 font-bold text-lg text-slate-700 focus:outline-none focus:border-joy-blue focus:ring-4 focus:ring-joy-blue/10 transition-all placeholder:font-normal placeholder:text-slate-300"
+                            placeholder="Contoh: 04A3B2C1D4E5F6"
+                            className="w-full bg-gradient-to-br from-slate-50 to-white border-2 border-slate-200 rounded-2xl pl-14 pr-5 py-4 font-semibold text-base text-slate-800 focus:outline-none focus:border-joy-blue focus:ring-4 focus:ring-joy-blue/20 transition-all placeholder:font-normal placeholder:text-slate-400 shadow-inner"
                             required
                         />
                     </div>
@@ -98,39 +137,46 @@ export default function LoginPage() {
                 {/* Error Message */}
                 {errorMsg && (
                     <motion.div 
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="p-3 bg-red-100 text-red-600 text-xs font-bold rounded-xl border border-red-200"
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        className="p-4 bg-gradient-to-r from-red-50 to-red-100 text-red-700 text-sm font-bold rounded-xl border-2 border-red-200 shadow-sm flex items-center gap-2"
                     >
-                        ⛔ {errorMsg}
+                        <span className="text-lg">⛔</span>
+                        <span>{errorMsg}</span>
                     </motion.div>
                 )}
 
                 <motion.button 
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02, boxShadow: "0 20px 40px rgba(59, 130, 246, 0.4)" }}
+                    whileTap={{ scale: 0.98 }}
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-joy-blue to-joy-purple text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-200 flex items-center justify-center gap-2 text-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all disabled:opacity-70 disabled:grayscale"
+                    className="w-full bg-gradient-to-r from-joy-blue via-joy-purple to-pink-500 text-white font-bold py-5 rounded-2xl shadow-xl shadow-blue-300/50 flex items-center justify-center gap-3 text-lg border-b-4 border-blue-700 active:border-b-2 active:translate-y-0.5 transition-all disabled:opacity-70 disabled:grayscale disabled:cursor-not-allowed relative overflow-hidden group"
                 >
+                    <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
                     {isLoading ? (
                         <>
-                            <Loader2 className="animate-spin" />
-                            Mengecek...
+                            <Loader2 className="animate-spin relative z-10" size={22} />
+                            <span className="relative z-10">Mengecek...</span>
                         </>
                     ) : (
                         <>
-                            <Rocket size={20} />
-                            Masuk Sekarang
+                            <Rocket size={22} className="relative z-10" />
+                            <span className="relative z-10">Masuk Sekarang</span>
                         </>
                     )}
                 </motion.button>
-            </form>
+            </motion.form>
         </motion.div>
 
-        <p className="mt-8 text-white/60 text-xs text-center relative z-10 font-medium">
-            Gunakan Kartu RFID yang sudah terdaftar<br/>di mesin PlayBox Fun
-        </p>
+        <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="mt-10 text-white/80 text-sm text-center relative z-10 font-semibold backdrop-blur-sm bg-white/10 px-6 py-3 rounded-full border border-white/20"
+        >
+            💳 Gunakan Kartu RFID yang sudah terdaftar
+        </motion.p>
     </div>
   );
 }

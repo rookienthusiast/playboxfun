@@ -10,7 +10,7 @@ const fredoka = Fredoka({
 });
 
 export const metadata: Metadata = {
-  title: "PlayFunBox - Nabung Jadi Seru!",
+  title: "Sirupi - Nabung Seru!",
   description: "Aplikasi menabung gamifikasi untuk anak",
 };
 
