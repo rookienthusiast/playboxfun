@@ -6,44 +6,78 @@ const router = Router();
 router.post('/money-in', async (req: Request, res: Response) => {
   const { uid, amount_rp, deviceId } = req.body;
 
+  // Validasi input
+  if (!uid || amount_rp === undefined || !deviceId) {
+    return res.status(400).json({ error: 'uid, amount_rp, dan deviceId wajib diisi' });
+  }
+
   try {
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Cari kartu
-      const card = await tx.userCard.findUnique({
-        where: { uid },
-        include: { user: true }
+      // 1. Cek UID sudah ada atau belum
+      let userId: number;
+      
+      const existingCard = await tx.userCard.findUnique({
+        where: { uid }
       });
 
-      // Validasi ketat untuk TS: pastikan card dan userId tidak null
-      if (!card || !card.userId || !card.user) {
-        throw new Error("Kartu tidak valid atau belum terhubung ke user");
+      if (existingCard) {
+        // RFID SUDAH LAMA: pakai userId yang sudah ada
+        userId = existingCard.userId;
+      } else {
+        // RFID BARU: buat User baru + UserCard baru
+        const newUser = await tx.user.create({
+          data: {
+            name: uid, // Nama default = UID (misal: "04A3B2C1D4E5F6")
+            balance: 0,
+            xp: 0,
+            puzzlePieces: 0,
+            currentAvatar: 'cat'
+          }
+        });
+        
+        await tx.userCard.create({
+          data: {
+            uid: uid,
+            userId: newUser.id
+          }
+        });
+        
+        userId = newUser.id;
       }
 
-      // 2. Tambah saldo (Pastikan npx prisma generate sudah dijalankan)
+      // 2. Update saldo, XP, dan puzzlePieces
       const updatedUser = await tx.user.update({
-        where: { id: card.userId },
+        where: { id: userId },
         data: { 
           balance: { increment: Number(amount_rp) },
-          // REWARD SYSTEM
           xp: { increment: Math.floor(Number(amount_rp) / 1000) }, // 1000rp = 1 xp
-          puzzlePieces: { increment: 1 } // Setiap nabung dapet 1 puzzle (Bonus)
+          puzzlePieces: { increment: 1 } // Setiap nabung dapet 1 puzzle
         }
       });
 
-      // 3. Catat history (Sesuaikan dengan field wajib di skema Ndan saat ini)
-      return await tx.moneyInEvent.create({
+      // 3. Catat transaksi (MoneyInEvent)
+      const event = await tx.moneyInEvent.create({
         data: {
-          deviceId: deviceId || "DEV-01",
-          userId: card.userId,
+          deviceId: deviceId,
+          userId: userId,
           amount_rp: Number(amount_rp),
           saldo_after: updatedUser.balance
         }
       });
+
+      return { user: updatedUser, event };
     });
 
-    res.json({ message: `Saldo masuk Rp${amount_rp}` });
+    res.json({ 
+      success: true,
+      message: `Saldo masuk Rp${amount_rp}`,
+      amount_rp: Number(amount_rp),
+      new_balance: result.user.balance
+    });
+
   } catch (err: any) {
-    res.status(400).json({ error: err.message || "Unknown error" });
+    console.error('Money-in Error:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
   }
 });
 
