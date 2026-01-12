@@ -3,7 +3,8 @@
 import { useUser } from '@/context/UserContext';
 import { LogOut, Award, User as UserIcon, Monitor, Smartphone, Tablet, Edit2, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getCustomAvatarUrl, getEvolutionName, TITLES, getAvatarSeed } from '@/data/mock';
 
 export default function ProfilePage() {
   const { user, logout, viewMode, setViewMode, updateUser } = useUser();
@@ -12,19 +13,53 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
+  // Sync user data on mount
+  useEffect(() => {
+      // Logic untuk refresh user data dari server agar selalu sinkron
+      if (user?.cardUid) {
+           fetch('http://localhost:4000/api/auth/login', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ uid: user.cardUid })
+           })
+           .then(res => res.json())
+           .then(data => {
+               if(data.success) {
+                   // Clean and safe update
+                   updateUser(data.user);
+               }
+           })
+           .catch(err => console.error("Sync failed", err));
+      }
+  }, []);
+
   const handleEdit = () => {
       setNewName(user.name);
       setIsEditing(true);
   };
 
-  const handleSaveName = () => {
+  const handleSaveName = async () => {
       if(newName.trim()) {
-          updateUser({ name: newName });
-          // Update local storage simple persistence
-          localStorage.setItem('playbox_user', newName); 
+          // 1. Update Server
+          try {
+              await fetch('http://localhost:4000/api/auth/update-name', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ userId: user.id, name: newName })
+              });
+              
+              // 2. Update Local Context
+              updateUser({ name: newName });
+          } catch (e) {
+              alert("Gagal menyimpan nama. Cek internet!");
+              console.error(e);
+          }
       }
       setIsEditing(false);
   };
+  
+  // Use consistent avatar seed logic
+  const avatarSeed = getAvatarSeed(user.currentAvatar || user.avatarId, user.balance);
 
   return (
     <div className="pb-24 min-h-screen bg-slate-50">
@@ -43,7 +78,7 @@ export default function ProfilePage() {
         <div className="flex flex-col items-center relative">
             <div className="w-28 h-28 bg-white rounded-full p-1 shadow-lg border-4 border-joy-blue mb-4 relative group cursor-pointer">
                 <div className="w-full h-full bg-slate-200 rounded-full overflow-hidden">
-                    <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${user.avatarId}`} alt="Avatar" />
+                    <img src={getCustomAvatarUrl(user)} alt="Avatar" referrerPolicy="no-referrer" />
                 </div>
                 {/* Edit Avatar Badge (Visual Only) */}
                 <div className="absolute bottom-0 right-0 bg-joy-orange text-white p-2 rounded-full border-2 border-white shadow-sm">
@@ -88,8 +123,8 @@ export default function ProfilePage() {
                 <div className="w-10 h-10 bg-joy-green/10 text-joy-green rounded-full flex items-center justify-center mx-auto mb-2">
                     <UserIcon size={20} />
                 </div>
-                <div className="text-xl font-bold text-slate-700">{user.unlockedAvatars.length}</div>
-                <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">Avatar</div>
+                <div className="text-xl font-bold text-slate-700">{user.inventory?.length || 0}</div>
+                <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">Item Fashion</div>
             </div>
         </div>
 

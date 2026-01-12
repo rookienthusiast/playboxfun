@@ -20,16 +20,14 @@ router.post('/login', async (req: Request, res: Response) => {
       include: {
         user: {
             include: {
-                avatars: true 
+                inventory: true // Fetch items
             }
-        } 
+        }
       },
     });
 
     // 2. Jika kartu tidak ditemukan
-    if (!card) {
-      return res.status(404).json({ error: 'Kartu tidak terdaftar' });
-    }
+    if (!card) return res.status(404).json({ error: 'Kartu tidak terdaftar' });
 
     // 3. Jika ketemu, kembalikan data user
     // Kita format sedikit biar rapi
@@ -41,8 +39,18 @@ router.post('/login', async (req: Request, res: Response) => {
       // Gamification Data
       xp: card.user.xp,
       puzzlePieces: card.user.puzzlePieces,
-      avatarId: card.user.currentAvatar,
-      unlockedAvatars: card.user.avatars.map(a => a.avatarId), 
+
+      // Avatar Customization
+      equippedBase: card.user.equippedBase,
+      equippedHair: card.user.equippedHair,
+      equippedHairColor: card.user.equippedHairColor, // Sync hair color on login
+      equippedClothing: card.user.equippedClothing,
+      equippedAccessory: card.user.equippedAccessory,
+
+      // Inventory (List of item IDs)
+      inventory: card.user.inventory.map(i => i.itemId),
+
+      claimedBoxes: card.user.claimedBoxes,
     };
 
     return res.json({
@@ -54,6 +62,20 @@ router.post('/login', async (req: Request, res: Response) => {
     console.error('Login Error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+// Update Profile Name
+router.post('/update-name', async (req: Request, res: Response) => {
+    const { userId, name } = req.body;
+    try {
+        await prisma.user.update({
+            where: { id: userId },
+            data: { name }
+        });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Gagal update nama' });
+    }
 });
 
 export default router;

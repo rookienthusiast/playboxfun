@@ -13,14 +13,22 @@ model User {
   name      String   // Nama anak (misal: "Budi")
   balance   Int      @default(0) // Saldo total anak saat ini
   
-  // GAMIFICATION STATS
-  xp            Int      @default(0)     // Experience Points
-  puzzlePieces  Int      @default(0)     // Mata uang Puzzle
-  currentAvatar String   @default("cat") // ID Avatar yang dipakai (cat, dog, bear, etc)
+  // Gamification & Avatar Customization
+  xp            Int      @default(0)
+  puzzlePieces  Int      @default(0)
+  
+  // Equipped Items (Apa yang sedang dipakai)
+  equippedBase      String   @default("base") // Seed dasar
+  equippedHair      String   @default("shortFlat") 
+  equippedHairColor String   @default("2c1b18") // Default Hitam
+  equippedClothing  String   @default("shirtCrewNeck")
+  equippedAccessory String   @default("none")
+
+  claimedBoxes  String   @default("") 
   
   cards     UserCard[]
   events    MoneyInEvent[]
-  avatars   UserAvatar[]     // Daftar avatar yang dimiliki
+  inventory UserItem[] // Ganti UserAvatar jadi Inventory
 }
 
 model UserCard {
@@ -29,14 +37,18 @@ model UserCard {
   userId    Int
 }
 
-model UserAvatar {
+// Model Inventory (Barang yang dimiliki user)
+model UserItem {
   id        Int      @id @default(autoincrement())
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
-  avatarId  String   // Kode avatar: "cat", "dog", "bear"
+  
+  itemId    String   // ID Unik Barang (misal: "hair-curly", "shirt-red")
+  category  String   // Jenis: "hair", "clothing", "accessory"
+  
   unlockedAt DateTime @default(now())
 
-  @@unique([userId, avatarId]) // Satu user gaboleh punya 2 avatar "cat" yang sama
+  @@unique([userId, itemId]) // User gak bisa punya 2 barang yg sama
 }
 
 model MoneyInEvent {

@@ -12,10 +12,19 @@ async function main() {
     create: {
       name: 'Jojo Sang Juara',
       balance: 150000,
-      cards: {
-        create: {
-          uid: 'CARD-JOJO-01',
-        }
+      xp: 150, // Fix XP awal
+      puzzlePieces: 10,
+      equippedHair: 'shortFlat', // Fix: match NEW Avataaars style
+      equippedHairColor: '2c1b18', // New Default
+      equippedClothing: 'hoodie',
+      equippedAccessory: 'wayfarers',
+      cards: { create: { uid: 'CARD-JOJO-01' } },
+      inventory: {
+        create: [
+            { itemId: 'shortFlat', category: 'hair' },
+            { itemId: 'hoodie', category: 'clothing' },
+            { itemId: 'wayfarers', category: 'accessory' }
+        ]
       }
     },
   });
@@ -26,15 +35,19 @@ async function main() {
     create: {
       name: 'Siti Rajin',
       balance: 75000,
-      cards: {
-        create: {
-          uid: 'CARD-SITI-01',
-        }
+      xp: 75,
+      puzzlePieces: 5,
+      cards: { create: { uid: 'CARD-SITI-01' } },
+      inventory: {
+         create: [
+            { itemId: 'shortFlat', category: 'hair' },
+            { itemId: 'shirtCrewNeck', category: 'clothing' }
+         ]
       }
     },
   });
 
-  console.log('✅ Users & Cards created');
+  console.log('✅ Users with Fashion Inventory created');
 
   // 2. Buat Fake Transactions (User nabung)
   // Perhatikan: Model Device tidak ada, jadi deviceId di sini cuma String biasa (bukan relation)

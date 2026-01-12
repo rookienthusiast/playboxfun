@@ -8,6 +8,7 @@ import iotRoutes from './routes/iot';
 import authRoutes from './routes/auth';
 import historyRoutes from './routes/history';
 import storeRoutes from './routes/store';
+import gameRoutes from './routes/game';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use('/api/iot', iotRoutes);   // Endpoint untuk Hardware
 app.use('/api/auth', authRoutes); // Endpoint untuk Login Aplikasi
 app.use('/api/history', historyRoutes); // Endpoint History Transaksi
 app.use('/api/store', storeRoutes); // Endpoint Toko Avatar
+app.use('/api/game', gameRoutes); // Endpoint untuk Game
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Express + Prisma Server is running!');

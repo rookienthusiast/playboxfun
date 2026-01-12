@@ -1,6 +1,6 @@
 'use client';
 
-import { getCurrentTitle, formatCurrency, TITLES, getAvatarSeed, getEvolutionName } from '@/data/mock';
+import { getCurrentTitle, formatCurrency, TITLES, getAvatarSeed, getEvolutionName, getCustomAvatarUrl } from '@/data/mock';
 import { Sparkles, Star, Gamepad2, Store, Puzzle, X, Info } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -51,7 +51,8 @@ export default function Home() {
 
   const currentTitle = getCurrentTitle(user.balance);
   const nextTitle = TITLES.find(t => t.minBalance > user.balance);
-  const avatarSeed = getAvatarSeed(user.avatarId, user.balance);
+  // const avatarSeed = getAvatarSeed(user.avatarId, user.balance); -- Legacy removed
+  const avatarUrl = getCustomAvatarUrl(user);
   const evolutionName = getEvolutionName(user.balance);
   
   return (
@@ -109,7 +110,7 @@ export default function Home() {
             <Link href="/profile">
                 <div className="w-14 h-14 bg-white rounded-full p-1 shadow-md border-4 border-joy-yellow cursor-pointer hover:scale-105 transition-transform">
                     <div className="w-full h-full bg-slate-200 rounded-full overflow-hidden">
-                        <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${avatarSeed}`} alt="Avatar" />
+                        <img src={avatarUrl} alt="Avatar" referrerPolicy="no-referrer" />
                     </div>
                 </div>
             </Link>
@@ -190,11 +191,9 @@ export default function Home() {
         {/* CURRENCY & STATS ROW */}
         <div className="grid grid-cols-2 gap-4">
             
-            {/* PUZZLE INFO (Clickable for Info) */}
+            {/* PUZZLE INFO */}
             <motion.div 
-                whileTap={{ scale: 0.95 }}
-                onClick={() => alert("Kumpulkan Puzzle dari Peti Harta Karun di Game!")}
-                className="bg-joy-yellow-light p-4 rounded-3xl flex items-center justify-between border-2 border-joy-yellow/20 relative overflow-hidden h-full cursor-help"
+                className="bg-joy-yellow-light p-4 rounded-3xl flex items-center justify-between border-2 border-joy-yellow/20 relative overflow-hidden h-full"
             >
                 <div className="absolute -right-2 -bottom-2 text-joy-yellow opacity-20 transform rotate-12">
                    <Puzzle size={60} />

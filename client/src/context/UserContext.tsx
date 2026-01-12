@@ -46,18 +46,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   // Updated login function to accept full user data from API
   const login = (userData: any) => {
-    // Merge API data with mock default structure (to keep xp/level logic working)
+    // Merge API data with mock default structure
     const mergedUser = { 
         ...MOCK_USER, 
         ...userData,
-        // Ensure critical fields exist if API doesn't send them yet
+        // Ensure critical fields exist
         xp: userData.xp || 0,
         puzzlePieces: userData.puzzlePieces || 0,
-        avatarId: userData.avatarId || 'cat'
+        inventory: userData.inventory || [],
+        
+        equippedBase: userData.equippedBase || 'base',
+        equippedHair: userData.equippedHair || 'shortHair', 
+        equippedClothing: userData.equippedClothing || 'shirtCrewNeck',
+        equippedAccessory: userData.equippedAccessory || 'none'
     };
     
     setUser(mergedUser);
-    localStorage.setItem('playbox_user', JSON.stringify(mergedUser)); // Save full object
+    localStorage.setItem('playbox_user', JSON.stringify(mergedUser));
     router.push('/');
   };
 
@@ -68,7 +73,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateUser = (updates: Partial<User>) => {
-      setUser(prev => prev ? { ...prev, ...updates } : null);
+      setUser(prev => {
+          if (!prev) return null;
+          const updated = { ...prev, ...updates };
+          localStorage.setItem('playbox_user', JSON.stringify(updated)); // Persist!
+          return updated;
+      });
   };
 
   const handleSetViewMode = (mode: 'mobile' | 'tablet' | 'desktop') => {

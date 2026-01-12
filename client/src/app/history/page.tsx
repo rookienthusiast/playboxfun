@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useUser } from '@/context/UserContext';
-import { formatCurrency } from '@/data/mock';
+import { formatCurrency, getCustomAvatarUrl } from '@/data/mock';
 import { History, TrendingUp, Calendar, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
@@ -46,11 +46,20 @@ export default function HistoryPage() {
   return (
     <div className="pb-24 min-h-screen bg-slate-50">
       {/* HEADER */}
-      <header className="bg-white p-4 items-center flex gap-4 shadow-sm sticky top-0 z-10 border-b border-slate-100">
-        <div className="bg-joy-blue/10 p-2 rounded-full text-joy-blue">
-            <History size={24} />
+      <header className="bg-white p-4 flex items-center justify-between shadow-sm sticky top-0 z-10 border-b border-slate-100">
+        <div className="flex items-center gap-3">
+            <div className="bg-joy-blue/10 p-2 rounded-full text-joy-blue">
+                <History size={24} />
+            </div>
+            <h1 className="text-xl font-bold text-slate-700">Riwayat</h1>
         </div>
-        <h1 className="text-xl font-bold text-slate-700">Riwayat Mutasi</h1>
+        
+        {/* Avatar Mini */}
+        {user && (
+            <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border-2 border-slate-200">
+                <img src={getCustomAvatarUrl(user)} alt="Me" className="w-full h-full object-cover" referrerPolicy="no-referrer"/>
+            </div>
+        )}
       </header>
 
       <div className="p-4 space-y-4">
