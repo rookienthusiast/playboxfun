@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useUser } from '@/context/UserContext';
 import { motion } from 'framer-motion';
 import { Sparkles, Rocket, ScanLine, Loader2 } from 'lucide-react';
+import { API_URL } from '@/config';
 
 export default function LoginPage() {
   const [uid, setUid] = useState('');
@@ -19,9 +20,7 @@ export default function LoginPage() {
     setErrorMsg('');
 
     try {
-        // 1. Tembak API Login (Hardcoded localhost for dev)
-        // Di Real project, URL ini harusnya dari environment variable
-        const response = await fetch('http://localhost:4000/api/auth/login', {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -32,17 +31,12 @@ export default function LoginPage() {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            // 2. Login Sukses -> Masuk ke App
-            // Kirim data user asli dari DB ke context
-            // Kita perlu menyesuaikan UserContext agar menerima objek User lengkap dari DB
             login(data.user);
         } else {
-            // Login Gagal
             setErrorMsg(data.error || 'Login gagal. Coba lagi.');
         }
 
     } catch (err) {
-        console.error(err);
         setErrorMsg('Gagal terhubung ke server. Pastikan server nyala.');
     } finally {
         setIsLoading(false);
@@ -52,7 +46,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-joy-blue via-joy-purple to-pink-500 flex flex-col items-center justify-center p-8 relative overflow-hidden">
         
-        {/* Animated Background Shapes */}
         <motion.div 
             animate={{ y: [0, -20, 0], opacity: [0.3, 0.6, 0.3] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -69,14 +62,12 @@ export default function LoginPage() {
             <Sparkles size={80} />
         </motion.div>
         
-        {/* LOGIN CARD */}
         <motion.div 
             initial={{ scale: 0.8, opacity: 0, y: 50 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={{ type: "spring", damping: 15, stiffness: 200 }}
             className="bg-white/95 backdrop-blur-xl p-10 rounded-[40px] shadow-[0_25px_60px_rgba(0,0,0,0.4)] w-full max-w-md relative z-10 text-center border-4 border-white/60"
         >
-            {/* Logo Section */}
             <motion.div 
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -113,7 +104,6 @@ export default function LoginPage() {
                 className="space-y-6"
             >
                 
-                {/* UID Input */}
                 <div className="text-left space-y-3">
                     <label className="text-sm font-bold text-slate-700 ml-3 flex items-center gap-2">
                         <ScanLine size={16} className="text-joy-blue" />
@@ -134,7 +124,6 @@ export default function LoginPage() {
                     </div>
                 </div>
 
-                {/* Error Message */}
                 {errorMsg && (
                     <motion.div 
                         initial={{ opacity: 0, y: -10, scale: 0.95 }}

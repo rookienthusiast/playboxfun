@@ -6,6 +6,7 @@ import { formatCurrency, getCustomAvatarUrl } from '@/data/mock';
 import { History, TrendingUp, Calendar, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
+import { API_URL } from '@/config';
 
 interface Transaction {
     id: number;
@@ -23,7 +24,7 @@ export default function HistoryPage() {
   useEffect(() => {
     if (user?.id) {
         setLoading(true);
-        fetch(`http://localhost:4000/api/history?userId=${user.id}`)
+        fetch(`${API_URL}/api/history?userId=${user.id}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -45,7 +46,6 @@ export default function HistoryPage() {
 
   return (
     <div className="pb-24 min-h-screen bg-slate-50">
-      {/* HEADER */}
       <header className="bg-white p-4 flex items-center justify-between shadow-sm sticky top-0 z-10 border-b border-slate-100">
         <div className="flex items-center gap-3">
             <div className="bg-joy-blue/10 p-2 rounded-full text-joy-blue">
@@ -54,7 +54,6 @@ export default function HistoryPage() {
             <h1 className="text-xl font-bold text-slate-700">Riwayat</h1>
         </div>
         
-        {/* Avatar Mini */}
         {user && (
             <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border-2 border-slate-200">
                 <img src={getCustomAvatarUrl(user)} alt="Me" className="w-full h-full object-cover" referrerPolicy="no-referrer"/>
@@ -63,7 +62,6 @@ export default function HistoryPage() {
       </header>
 
       <div className="p-4 space-y-4">
-        {/* Month Separator Example */}
         <div className="flex items-center gap-2 text-slate-400 text-sm font-medium px-2">
             <Calendar size={14} />
             <span>Terbaru</span>
@@ -79,7 +77,6 @@ export default function HistoryPage() {
                             </div>
                             <div>
                                 <p className="font-bold text-slate-700">{trx.title}</p>
-                                {/* Format tanggal jadi: Selasa, 9 Jan 2026 */}
                                 <p className="text-xs text-slate-400">
                                     {format(new Date(trx.date), 'eeee, d MMM yyyy - HH:mm', { locale: idLocale })}
                                 </p>

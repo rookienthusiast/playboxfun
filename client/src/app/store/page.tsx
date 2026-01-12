@@ -4,34 +4,34 @@ import { useUser } from '@/context/UserContext';
 import { ArrowLeft, Check, Lock, ShoppingBag, Info, Shirt, Scissors, Glasses, Palette } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { getCustomAvatarUrl, formatCurrency, User } from '@/data/mock';
+import { API_URL } from '@/config';
 
-// --- FRONTEND CATALOG DEFINITION ---
-// (Should match Backend Catalog)
+
 interface ShopItem {
     id: string;
     name: string;
     price: number;
     category: 'hair' | 'clothing' | 'accessory' | 'hairColor';
-    icon?: any; // For custom icon rendering if needed
+    icon?: any;
 }
 
+
 const SHOP_ITEMS: ShopItem[] = [
-    // HAIR (Valid IDs)
     { id: 'shortFlat', name: 'Rambut Pendek', price: 0, category: 'hair' },
     { id: 'straight01', name: 'Rambut Panjang', price: 20, category: 'hair' },
     { id: 'shortCurly', name: 'Rambut Kriting', price: 25, category: 'hair' },
     { id: 'bob', name: 'Potongan Bob', price: 30, category: 'hair' },
     { id: 'bun', name: 'Sanggul', price: 35, category: 'hair' },
     { id: 'dreads01', name: 'Gimbal', price: 40, category: 'hair' },
-    { id: 'shaggyMullet', name: 'Mullet Gaul', price: 45, category: 'hair' }, // NEW
-    { id: 'winterHat02', name: 'Topi Dingin', price: 50, category: 'hair' }, // NEW
-    { id: 'hijab', name: 'Hijab', price: 30, category: 'hair' }, // NEW
-    { id: 'turban', name: 'Turban', price: 35, category: 'hair' }, // NEW
-    { id: 'miaWallace', name: 'Poni Bob', price: 40, category: 'hair' }, // NEW
+    { id: 'shaggyMullet', name: 'Mullet Gaul', price: 45, category: 'hair' },
+    { id: 'winterHat02', name: 'Topi Dingin', price: 50, category: 'hair' },
+    { id: 'hijab', name: 'Hijab', price: 30, category: 'hair' },
+    { id: 'turban', name: 'Turban', price: 35, category: 'hair' },
+    { id: 'miaWallace', name: 'Poni Bob', price: 40, category: 'hair' },
 
-    // HAIR COLORS (NEW)
     { id: '2c1b18', name: 'Hitam Alami', price: 0, category: 'hairColor' },
     { id: '4a312c', name: 'Coklat Tua', price: 10, category: 'hairColor' },
     { id: '724133', name: 'Coklat', price: 10, category: 'hairColor' },
@@ -42,7 +42,6 @@ const SHOP_ITEMS: ShopItem[] = [
     { id: 'e8e1e1', name: 'Platinum', price: 25, category: 'hairColor' },
     { id: 'f59797', name: 'Pink Lucu', price: 30, category: 'hairColor' },
 
-    // CLOTHING (Sesuai Screenshot: Baju & Warna)
     { id: 'shirtCrewNeck', name: 'Kaos Crew', price: 0, category: 'clothing' },
     { id: 'shirtVNeck', name: 'Kaos V-Neck', price: 15, category: 'clothing' },
     { id: 'shirtScoopNeck', name: 'Kaos Scoop', price: 15, category: 'clothing' },
@@ -51,9 +50,8 @@ const SHOP_ITEMS: ShopItem[] = [
     { id: 'overall', name: 'Overalls', price: 40, category: 'clothing' },
     { id: 'collarAndSweater', name: 'Kerah & Sweater', price: 45, category: 'clothing' },
     { id: 'blazerAndShirt', name: 'Jas Resmi', price: 50, category: 'clothing' },
-    { id: 'blazerAndSweater', name: 'Jas & Sweater', price: 55, category: 'clothing' }, // Premium
+    { id: 'blazerAndSweater', name: 'Jas & Sweater', price: 55, category: 'clothing' },
 
-    // ACCESSORIES (Sesuai Screenshot)
     { id: 'none', name: 'Lepas Aksesoris', price: 0, category: 'accessory' },
     { id: 'round', name: 'Kacamata Bulat', price: 15, category: 'accessory' },
     { id: 'kurt', name: 'Kacamata Kurt', price: 20, category: 'accessory' },
@@ -61,45 +59,47 @@ const SHOP_ITEMS: ShopItem[] = [
     { id: 'prescription02', name: 'Kacamata Baca 2', price: 25, category: 'accessory' },
     { id: 'wayfarers', name: 'Kacamata Hitam', price: 30, category: 'accessory' },
     { id: 'sunglasses', name: 'Sunglasses', price: 35, category: 'accessory' },
-    { id: 'eyepatch', name: 'Bajak Laut', price: 50, category: 'accessory' }, // Mahal!
+    { id: 'eyepatch', name: 'Bajak Laut', price: 50, category: 'accessory' },
 ];
 
 export default function StorePage() {
-  const { user, updateUser } = useUser();
+  const { user, updateUser, isLoading } = useUser();
+  const router = useRouter();
+  
   const [activeTab, setActiveTab] = useState<'hair' | 'clothing' | 'accessory' | 'hairColor'>('hair');
-  const [previewUser, setPreviewUser] = useState<User | null>(user); // For instant preview before buying
-  
-  // Update preview when user changes (e.g. after buy)
-  // But also allow "Trying on" items
   const [tryingItem, setTryingItem] = useState<string | null>(null);
-  
-  // MODALS STATE
+  const [previewUser, setPreviewUser] = useState<User | null>(null);
+
   const [itemToBuy, setItemToBuy] = useState<ShopItem | null>(null);
   const [showError, setShowError] = useState(false);
 
+  useEffect(() => {
+     if (!isLoading && !user) router.push('/login');
+     if (!isLoading && user) setPreviewUser(user);
+  }, [user, isLoading, router]);
+  
+  if (isLoading) return <div className="p-10 text-center font-bold text-slate-400">Loading Store...</div>;
   if (!user) return null;
-
-  // Filter items by category
+  
   const currentItems = SHOP_ITEMS.filter(item => item.category === activeTab);
 
   const handleTryOn = (item: ShopItem) => {
       setTryingItem(item.id);
       
-      // Create a temporary user object for preview
-      if (previewUser) {
-          const temp = { ...previewUser };
-          if (item.category === 'hair') temp.equippedHair = item.id;
-          if (item.category === 'hairColor') temp.equippedHairColor = item.id;
-          if (item.category === 'clothing') temp.equippedClothing = item.id;
-          if (item.category === 'accessory') temp.equippedAccessory = item.id;
-          setPreviewUser(temp);
-      }
+      const baseUser = previewUser || user;
+      const temp = { ...baseUser };
+      
+      if (item.category === 'hair') temp.equippedHair = item.id;
+      if (item.category === 'hairColor') temp.equippedHairColor = item.id;
+      if (item.category === 'clothing') temp.equippedClothing = item.id;
+      if (item.category === 'accessory') temp.equippedAccessory = item.id;
+      
+      setPreviewUser(temp);
   };
 
-  // LOGIC EQUIP
   const performEquip = async (item: ShopItem) => {
       try {
-         const res = await fetch('http://localhost:4000/api/store/equip', {
+         const res = await fetch(`${API_URL}/api/store/equip`, {
              method: 'POST',
              headers: { 'Content-Type': 'application/json' },
              body: JSON.stringify({ userId: user.id, itemId: item.id })
@@ -108,7 +108,7 @@ export default function StorePage() {
          if (data.success) {
               const updatedUser = { ...user };
               if (item.category === 'hair') updatedUser.equippedHair = item.id;
-              if (item.category === 'hairColor') updatedUser.equippedHairColor = item.id; // Specific Color
+              if (item.category === 'hairColor') updatedUser.equippedHairColor = item.id;
               if (item.category === 'clothing') updatedUser.equippedClothing = item.id;
               if (item.category === 'accessory') updatedUser.equippedAccessory = item.id;
               
@@ -120,7 +120,6 @@ export default function StorePage() {
       }
   };
 
-  // LOGIC BELI
   const initiateBuy = (item: ShopItem) => {
       if (user.puzzlePieces < item.price) {
           setShowError(true);
@@ -129,22 +128,18 @@ export default function StorePage() {
       }
   };
 
-  // LOGIC CONFIRM
   const confirmPurchase = async () => {
       if (!itemToBuy) return;
       try {
-          const res = await fetch('http://localhost:4000/api/store/buy', {
+          const res = await fetch(`${API_URL}/api/store/buy`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ userId: user.id, itemId: itemToBuy.id })
           });
           const data = await res.json();
           if (data.success) {
-              updateUser({
-                  ...user,
-                  puzzlePieces: data.newBalance,
-                  inventory: [...user.inventory, itemToBuy.id]
-              });
+              updateUser(data.user);
+              
               performEquip(itemToBuy); 
               setItemToBuy(null);
           } else {
@@ -155,7 +150,6 @@ export default function StorePage() {
       }
   };
 
-  // MAIN HANDLER
   const handleAction = (item: ShopItem) => {
        const isOwned = user.inventory.includes(item.id) || item.price === 0;
        if (isOwned) {
@@ -165,15 +159,12 @@ export default function StorePage() {
        }
   };
 
- // Calculate dynamic avatar URL
  const displayUser = tryingItem && previewUser ? previewUser : user;
  const avatarUrl = getCustomAvatarUrl(displayUser);
 
   return (
     <div className="pb-24 min-h-screen bg-slate-50">
       
-      {/* HEADER */}
-      {/* HEADER - Updated z-index */}
       <header className="bg-white p-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
         <div className="flex items-center gap-3">
             <Link href="/">
@@ -191,7 +182,6 @@ export default function StorePage() {
 
       <div className="p-4 space-y-6">
         
-        {/* PREVIEW AREA (Fitting Room) */}
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col items-center relative overflow-hidden">
              <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-slate-50 to-transparent" />
              
@@ -204,26 +194,13 @@ export default function StorePage() {
                         referrerPolicy="no-referrer"
                       />
                  </div>
-                 {tryingItem && (
-                     <motion.div 
-                        initial={{ scale: 0 }} animate={{ scale: 1 }}
-                        className="absolute bottom-0 right-0 bg-joy-green text-white text-xs font-bold px-2 py-1 rounded-full shadow-md"
-                     >
-                         Mencoba
-                     </motion.div>
-                 )}
              </div>
-             
-             <p className="mt-4 text-slate-400 text-sm font-medium">
-                 {tryingItem ? "Gimana? Cocok gak?" : "Ganteng maksimal!"}
-             </p>
         </div>
 
-        {/* TABS (Kategori) */}
         <div className="flex justify-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
             {[
                 { id: 'hair', icon: Scissors, label: 'Rambut' },
-                { id: 'hairColor', icon: Palette, label: 'Warna' }, // NEW TAB
+                { id: 'hairColor', icon: Palette, label: 'Warna' },
                 { id: 'clothing', icon: Shirt, label: 'Baju' },
                 { id: 'accessory', icon: Glasses, label: 'Aksesoris' }
             ].map((tab) => (
@@ -242,15 +219,13 @@ export default function StorePage() {
             ))}
         </div>
 
-        {/* ITEM GRID */}
         <div className="grid grid-cols-2 gap-4">
             {currentItems.map((item) => {
                 const isOwned = user.inventory.includes(item.id) || item.price === 0;
                 
-                // Check if equipped
                 let isEquipped = false;
                 if (item.category === 'hair' && user.equippedHair === item.id) isEquipped = true;
-                if (item.category === 'hairColor' && (user.equippedHairColor || '2c1b18') === item.id) isEquipped = true; // Handle default
+                if (item.category === 'hairColor' && (user.equippedHairColor || '2c1b18') === item.id) isEquipped = true;
                 if (item.category === 'clothing' && user.equippedClothing === item.id) isEquipped = true;
                 if (item.category === 'accessory' && user.equippedAccessory === item.id) isEquipped = true;
 
@@ -264,22 +239,19 @@ export default function StorePage() {
                             activeTab === item.category && tryingItem === item.id ? 'border-joy-purple bg-purple-50' : 'border-slate-100'
                         }`}
                     >
-                        {/* Status Badges */}
                         <div className="absolute top-3 right-3 flex flex-col gap-1 items-end">
                             {isEquipped && <div className="bg-joy-green text-white p-1 rounded-full"><Check size={12} strokeWidth={4}/></div>}
                             {!isOwned && <div className="bg-slate-200 text-slate-400 p-1 rounded-full"><Lock size={12} /></div>}
                         </div>
 
-                        {/* Visual Item */}
                         <div className="flex justify-center mb-4 mt-2">
                              {item.category === 'hairColor' ? (
                                  <div className="w-12 h-12 rounded-full shadow-inner border-2 border-white ring-2 ring-slate-100" style={{ backgroundColor: `#${item.id}` }} />
                              ) : (
-                                 <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
-                                     {/* Placeholder Icon */}
-                                      {item.category === 'hair' && <Scissors size={24} />}
-                                      {item.category === 'clothing' && <Shirt size={24} />}
-                                      {item.category === 'accessory' && <Glasses size={24} />}
+                                 <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">                                      {/* Placeholder Icon */}
+                                       {item.category === 'hair' && <Scissors size={24} />}
+                                       {item.category === 'clothing' && <Shirt size={24} />}
+                                       {item.category === 'accessory' && <Glasses size={24} />}
                                  </div>
                              )}
                         </div>

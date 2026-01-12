@@ -4,17 +4,15 @@ import { UserProvider, useUser } from "@/context/UserContext";
 import { usePathname } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
-// Inner component access context
 function AppContainer({ children }: { children: React.ReactNode }) {
   const { viewMode } = useUser();
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
 
-  // Define width based on mode
   const widthClass = 
     viewMode === 'mobile' ? 'max-w-md' : 
     viewMode === 'tablet' ? 'max-w-2xl' : 
-    'max-w-5xl'; // desktop
+    'max-w-5xl';
 
   return (
     <>
@@ -25,7 +23,6 @@ function AppContainer({ children }: { children: React.ReactNode }) {
                 <div className="flex-1 overflow-y-auto relative scrollbar-hide">
                     {children}
                 </div>
-                {/* Show Navbar unless on Login page */}
                 {!isLoginPage && <BottomNav />}
             </main>
         </div>

@@ -1,10 +1,10 @@
 'use client';
 
-import { getCurrentTitle, formatCurrency } from '@/data/mock';
+import { getCurrentTitle, formatCurrency, getCustomAvatarUrl, calculateLevel } from '@/data/mock';
 import { Share2, Copy } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useUser } from '@/context/UserContext'; // Use Context
+import { useUser } from '@/context/UserContext';
 
 export default function ReportPage() {
   const { user } = useUser();
@@ -14,18 +14,16 @@ export default function ReportPage() {
 
   const currentTitle = getCurrentTitle(user.balance);
   
-  // XP Logic (consistent with main page.tsx)
   const xpForNextLevel = 100;
   const currentLevelProgress = user.xp % xpForNextLevel;
-  const userLevel = Math.floor(user.xp / xpForNextLevel) + 1;
+  const userLevel = calculateLevel(user.xp);
 
-  // Generate WhatsApp Message
   const getWAMessage = () => {
-    return `*📊 LAPORAN TABUNGAN SIBUNAK*
+    return `*📊 LAPORAN TABUNGAN SIRUPI*
 ---------------------------
 
 👤 *Nama:* ${user.name}
-📅 *Periode:* Desember 2025
+📅 *Periode:* ${new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' })}
 
 💰 *RINGKASAN SALDO*
 Total Tabungan: ${formatCurrency(user.balance)}
@@ -41,7 +39,7 @@ Puzzle: ${user.puzzlePieces} keping
 ✨ _Terus semangat menabung, ${user.name}!_ ✨
 
 ---------------------------
-_Powered by PlayFunBox 🚀_`;
+_Powered by Sirupi 🚀_`;
   };
 
   const handleCopy = () => {
@@ -52,12 +50,11 @@ _Powered by PlayFunBox 🚀_`;
 
   const handleShareWA = () => {
     const text = encodeURIComponent(getWAMessage());
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };
 
   return (
     <div className="pb-24 min-h-screen bg-slate-50">
-      {/* HEADER */}
       <header className="bg-white p-4 items-center flex gap-4 shadow-sm sticky top-0 z-10 border-b border-slate-100">
         <div className="bg-joy-green-light p-2 rounded-full text-joy-green">
              <Share2 size={24} />
@@ -67,12 +64,13 @@ _Powered by PlayFunBox 🚀_`;
 
       <div className="p-6 space-y-6">
         
-        {/* SECTION: WHATSAPP PREVIEW CARD */}
         <section>
             <div className="bg-white p-6 rounded-3xl shadow-lg border border-slate-100 text-center mb-6">
-                <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${user.avatarId}`} className="w-20 h-20 mx-auto rounded-full bg-slate-50 mb-4" alt="avatar"/>
+                <div className="w-24 h-24 mx-auto rounded-full bg-slate-50 mb-4 overflow-hidden border-4 border-joy-green-light">
+                    <img src={getCustomAvatarUrl(user)} className="w-full h-full object-cover" alt="avatar" referrerPolicy="no-referrer"/>
+                </div>
                 <h2 className="text-lg font-bold text-slate-700">Laporan Siap Dikirim!</h2>
-                <p className="text-slate-400 text-sm">Bagikan progres menabungmu kepaada orang tua atau guru.</p>
+                <p className="text-slate-400 text-sm">Bagikan progres menabungmu kepada orang tua atau guru.</p>
             </div>
 
             <div className="flex items-center gap-2 mb-3 text-slate-500 text-sm font-semibold px-2">
@@ -89,14 +87,12 @@ _Powered by PlayFunBox 🚀_`;
             >
                 {getWAMessage()}
                 
-                {/* Time stamp simulation */}
                 <div className="text-[10px] text-slate-500 text-right mt-2 flex justify-end gap-1">
                     <span>Just now</span>
                     <span>✓✓</span>
                 </div>
             </motion.div>
 
-            {/* Action Buttons */}
             <div className="flex gap-3 mt-6">
                 <motion.button 
                     whileTap={{ scale: 0.95 }}

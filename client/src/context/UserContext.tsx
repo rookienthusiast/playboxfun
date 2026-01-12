@@ -1,3 +1,4 @@
+
 'use client';
 
 import { MOCK_USER, User } from '@/data/mock';
@@ -10,6 +11,7 @@ interface UserContextType {
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
   isLoggedIn: boolean;
+  isLoading: boolean;
   viewMode: 'mobile' | 'tablet' | 'desktop';
   setViewMode: (mode: 'mobile' | 'tablet' | 'desktop') => void;
 }
@@ -18,12 +20,12 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
   const router = useRouter();
 
   useEffect(() => {
 
-    // Load viewMode from local storage if exists
     const storedViewMode = localStorage.getItem('playbox_view_mode') as 'mobile' | 'tablet' | 'desktop';
     if (storedViewMode) setViewMode(storedViewMode);
 
@@ -31,26 +33,22 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (storedUser) {
         try {
             const parsed = JSON.parse(storedUser);
-            // Check if it's new object format or old string format
             if (typeof parsed === 'object') {
                 setUser(parsed);
             } else {
                 setUser({ ...MOCK_USER, name: storedUser });
             }
         } catch (e) {
-             // Fallback for old simple string
              setUser({ ...MOCK_USER, name: storedUser });
         }
     }
+    setIsLoading(false);
   }, []);
 
-  // Updated login function to accept full user data from API
   const login = (userData: any) => {
-    // Merge API data with mock default structure
     const mergedUser = { 
         ...MOCK_USER, 
         ...userData,
-        // Ensure critical fields exist
         xp: userData.xp || 0,
         puzzlePieces: userData.puzzlePieces || 0,
         inventory: userData.inventory || [],
@@ -76,7 +74,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       setUser(prev => {
           if (!prev) return null;
           const updated = { ...prev, ...updates };
-          localStorage.setItem('playbox_user', JSON.stringify(updated)); // Persist!
+          localStorage.setItem('playbox_user', JSON.stringify(updated));
           return updated;
       });
   };
@@ -87,7 +85,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <UserContext.Provider value={{ user, login, logout, updateUser, isLoggedIn: !!user, viewMode, setViewMode: handleSetViewMode }}>
+    <UserContext.Provider value={{ user, login, logout, updateUser, isLoggedIn: !!user, isLoading, viewMode, setViewMode: handleSetViewMode }}>
       {children}
     </UserContext.Provider>
   );

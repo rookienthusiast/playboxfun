@@ -6,14 +6,12 @@ const router = Router();
 router.post('/money-in', async (req: Request, res: Response) => {
   const { uid, amount_rp, deviceId } = req.body;
 
-  // Validasi input
   if (!uid || amount_rp === undefined || !deviceId) {
     return res.status(400).json({ error: 'uid, amount_rp, dan deviceId wajib diisi' });
   }
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Cek UID sudah ada atau belum
       let userId: number;
       
       const existingCard = await tx.userCard.findUnique({
@@ -21,17 +19,19 @@ router.post('/money-in', async (req: Request, res: Response) => {
       });
 
       if (existingCard) {
-        // RFID SUDAH LAMA: pakai userId yang sudah ada
         userId = existingCard.userId;
       } else {
-        // RFID BARU: buat User baru + UserCard baru
         const newUser = await tx.user.create({
           data: {
-            name: uid, // Nama default = UID (misal: "04A3B2C1D4E5F6")
+            name: uid,
             balance: 0,
             xp: 0,
             puzzlePieces: 0,
-            currentAvatar: 'cat'
+            equippedBase: 'base',
+            equippedHair: 'shortFlat',
+            equippedHairColor: '2c1b18',
+            equippedClothing: 'shirtCrewNeck',
+            equippedAccessory: 'none'
           }
         });
         
@@ -45,17 +45,15 @@ router.post('/money-in', async (req: Request, res: Response) => {
         userId = newUser.id;
       }
 
-      // 2. Update saldo, XP, dan puzzlePieces
       const updatedUser = await tx.user.update({
         where: { id: userId },
         data: { 
           balance: { increment: Number(amount_rp) },
-          xp: { increment: Math.floor(Number(amount_rp) / 1000) }, // 1000rp = 1 xp
-          puzzlePieces: { increment: 1 } // Setiap nabung dapet 1 puzzle
+          xp: { increment: Math.floor(Number(amount_rp) / 1000) },
+          puzzlePieces: { increment: 1 }
         }
       });
 
-      // 3. Catat transaksi (MoneyInEvent)
       const event = await tx.moneyInEvent.create({
         data: {
           deviceId: deviceId,
@@ -76,7 +74,6 @@ router.post('/money-in', async (req: Request, res: Response) => {
     });
 
   } catch (err: any) {
-    console.error('Money-in Error:', err);
     res.status(500).json({ error: err.message || 'Internal server error' });
   }
 });

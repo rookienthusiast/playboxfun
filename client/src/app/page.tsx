@@ -1,7 +1,7 @@
 'use client';
 
-import { getCurrentTitle, formatCurrency, TITLES, getAvatarSeed, getEvolutionName, getCustomAvatarUrl } from '@/data/mock';
-import { Sparkles, Star, Gamepad2, Store, Puzzle, X, Info } from 'lucide-react';
+import { getCurrentTitle, formatCurrency, TITLES, getCustomAvatarUrl, getEvolutionName, calculateLevel } from '@/data/mock';
+import { Star, Gamepad2, Store, Puzzle, Info, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@/context/UserContext';
@@ -14,10 +14,10 @@ export default function Home() {
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [showXPInfo, setShowXPInfo] = useState(false);
 
-  // XP Logic
   const xpForNextLevel = 100;
   const currentLevelProgress = user ? user.xp % xpForNextLevel : 0;
-  const userLevel = user ? Math.floor(user.xp / xpForNextLevel) + 1 : 1;
+  const userLevel = user ? calculateLevel(user.xp) : 1;
+  const currentTitle = user ? getCurrentTitle(user.balance) : TITLES[0];
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -25,23 +25,19 @@ export default function Home() {
     }
   }, [isLoggedIn, router]);
 
-  // Level Up Detection Logic
   useEffect(() => {
     if (user) {
         const storedLevel = parseInt(localStorage.getItem('last_seen_level') || '0');
         
-        // Initial save if first time
         if (storedLevel === 0) {
             localStorage.setItem('last_seen_level', userLevel.toString());
             return;
         }
 
-        // Check if leveled up
         if (userLevel > storedLevel) {
             setShowLevelUp(true);
             localStorage.setItem('last_seen_level', userLevel.toString());
         } else {
-             // Sync if somehow decreased (though unlikely) or same
              localStorage.setItem('last_seen_level', userLevel.toString());
         }
     }
@@ -49,16 +45,13 @@ export default function Home() {
   
   if (!user) return null;
 
-  const currentTitle = getCurrentTitle(user.balance);
   const nextTitle = TITLES.find(t => t.minBalance > user.balance);
-  // const avatarSeed = getAvatarSeed(user.avatarId, user.balance); -- Legacy removed
   const avatarUrl = getCustomAvatarUrl(user);
   const evolutionName = getEvolutionName(user.balance);
   
   return (
     <div className="pb-32 relative">
       
-      {/* LEVEL UP MODAL OVERLAY */}
       <AnimatePresence>
         {showLevelUp && (
             <motion.div 
@@ -75,7 +68,6 @@ export default function Home() {
                     className="bg-white rounded-[40px] p-8 text-center shadow-2xl relative overflow-hidden max-w-sm w-full"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {/* Confetti Background Effect (Pure CSS/SVG animated would lead here, simplified for now) */}
                     <div className="absolute inset-0 bg-joy-yellow/10 z-0"></div>
                     
                     <motion.div 
@@ -100,9 +92,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* HEADER SECTION */}
       <header className="bg-joy-blue p-6 rounded-b-[40px] shadow-lg relative z-10 text-white overflow-hidden pb-12">
-         {/* Background Circles Decoration */}
          <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full" />
          <div className="absolute top-10 -left-10 w-24 h-24 bg-white/10 rounded-full" />
 
@@ -123,7 +113,6 @@ export default function Home() {
             </div>
          </div>
 
-         {/* SALDO CARD */}
          <div className="mt-8 mb-4">
             <p className="text-joy-blue-light text-sm font-medium opacity-90">Total Tabunganmu</p>
             <h2 className="text-4xl font-extrabold tracking-tight mt-1">
@@ -132,23 +121,21 @@ export default function Home() {
          </div>
       </header>
 
-      {/* CONTENT AREA */}
       <div className="px-6 -mt-10 relative z-20 space-y-4">
         
-        {/* LEVEL PROGRESS CARD (INTERACTIVE XP) */}
         <motion.div 
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowXPInfo(!showXPInfo)}
             className="bg-white p-5 rounded-3xl shadow-xl border border-slate-100 cursor-pointer relative overflow-hidden"
         >
             <div className="flex justify-between items-center mb-2">
-                <span className="font-bold text-slate-600">Level {userLevel} Konsisten</span>
+                <span className="font-bold text-slate-600">Level {userLevel} {currentTitle?.name}</span>
                 <div className="flex items-center gap-1 text-joy-orange font-bold text-sm">
                     <Star size={16} fill="currentColor" />
                     <span>{currentLevelProgress}/{xpForNextLevel} XP</span>
                 </div>
             </div>
-            {/* Progress Bar Container */}
+
             <div className="h-4 bg-slate-100 rounded-full overflow-hidden border border-slate-200 relative mb-1">
                 <motion.div 
                     initial={{ width: 0 }}
@@ -159,7 +146,6 @@ export default function Home() {
                 </motion.div>
             </div>
             
-            {/* XP INFO EXPANDABLE */}
             <AnimatePresence>
                 {showXPInfo && (
                     <motion.div 
@@ -188,10 +174,8 @@ export default function Home() {
             )}
         </motion.div>
 
-        {/* CURRENCY & STATS ROW */}
         <div className="grid grid-cols-2 gap-4">
             
-            {/* PUZZLE INFO */}
             <motion.div 
                 className="bg-joy-yellow-light p-4 rounded-3xl flex items-center justify-between border-2 border-joy-yellow/20 relative overflow-hidden h-full"
             >
@@ -209,7 +193,6 @@ export default function Home() {
                 </div>
             </motion.div>
 
-             {/* STORE SHORTCUT (RESTORED) */}
              <div className="bg-joy-purple-light p-4 rounded-3xl flex items-center justify-between border-2 border-joy-purple/20 relative overflow-hidden">
                 <div className="absolute -right-2 -bottom-2 text-joy-purple opacity-20 transform rotate-12">
                    <Store size={60} />
@@ -226,7 +209,6 @@ export default function Home() {
             </div>
         </div>
 
-        {/* BIG PLAY BUTTON */}
         <Link href="/game" className="block group">
             <motion.div 
                 whileTap={{ scale: 0.98 }}
@@ -245,11 +227,7 @@ export default function Home() {
                 </div>
             </motion.div>
         </Link>
-
       </div>
-
-
-
     </div>
   );
 }

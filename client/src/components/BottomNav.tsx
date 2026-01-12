@@ -11,7 +11,7 @@ export default function BottomNav() {
   const NAV_ITEMS = [
     { label: "Home", href: "/", icon: Home },
     { label: "Riwayat", href: "/history", icon: History },
-    { label: "Laporan", href: "/report", icon: HeartHandshake }, // Ganti ikon report
+    { label: "Laporan", href: "/report", icon: HeartHandshake },
     { label: "Profil", href: "/profile", icon: User },
   ];
 
@@ -23,7 +23,6 @@ export default function BottomNav() {
         return (
           <Link key={item.href} href={item.href} className="relative group">
             <div className={`flex flex-col items-center gap-1 transition-colors ${isActive ? 'text-joy-blue' : 'text-slate-400 hover:text-joy-blue/70'}`}>
-                {/* Active Indicator Dot */}
                 {isActive && (
                     <motion.div 
                         layoutId="nav-dot"

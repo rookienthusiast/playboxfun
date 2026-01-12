@@ -7,38 +7,42 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@/context/UserContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/config';
 
 export default function GamePage() {
-  const { user, updateUser } = useUser(); 
+  const { user, updateUser, isLoading } = useUser(); 
   const router = useRouter();
   
-  // Modal State
   const [selectedBox, setSelectedBox] = useState<number | null>(null);
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState(false);
 
   useEffect(() => {
-    if (!user) router.push('/login');
-  }, [user, router]);
+    if (!isLoading && !user) router.push('/login');
+  }, [user, isLoading, router]);
+
+  if (isLoading) {
+      return (
+          <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
+              <Loader2 className="animate-spin text-joy-blue" size={48} />
+              <p className="text-joy-blue font-bold animate-pulse">Menyiapkan Papan Permainan...</p>
+          </div>
+      );
+  }
 
   if (!user) return null;
    
-  // Game Configuration
-  const STEP_VALUE = 10000; // 1 Langkah = 10rb
+  const STEP_VALUE = 10000;
   const TOTAL_STEPS = 100;   
   const CURRENT_STEP = Math.min(Math.floor(user.balance / STEP_VALUE), TOTAL_STEPS);
   
-  // Mystery Box Locations
   const MYSTERY_BOXES = [5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 90, 100];
-  // Location logic defined below
 
-  // Parse claimed boxes from string "5,10" to array [5, 10]
   const claimedBoxList = user.claimedBoxes 
     ? user.claimedBoxes.split(',').map(s => parseInt(s)).filter(n => !isNaN(n))
     : [];
 
   const handleBoxClick = (step: number) => {
-      // Logic: Only allow click if reached AND not claimed
       if (CURRENT_STEP >= step && !claimedBoxList.includes(step)) {
           setSelectedBox(step);
           setClaimSuccess(false);
@@ -50,7 +54,7 @@ export default function GamePage() {
       setIsClaiming(true);
 
       try {
-          const res = await fetch('http://localhost:4000/api/game/claim', {
+          const res = await fetch(`${API_URL}/api/game/claim`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ userId: user.id, step: selectedBox })
@@ -59,12 +63,10 @@ export default function GamePage() {
 
           if (data.success) {
               setClaimSuccess(true);
-              // Update Context Data
               updateUser({
                   puzzlePieces: data.puzzlePieces,
                   claimedBoxes: data.claimedBoxes
               });
-              // Close modal after delay
               setTimeout(() => {
                   setSelectedBox(null);
                   setClaimSuccess(false);
@@ -74,14 +76,12 @@ export default function GamePage() {
               setSelectedBox(null);
           }
       } catch (err) {
-          console.error(err);
           alert("Gagal klaim hadiah");
       } finally {
           setIsClaiming(false);
       }
   };
 
-  // Generate Board Grid (Zigzag Logic)
   const rows = [];
   const cols = 5;
   for (let i = 0; i < TOTAL_STEPS; i += cols) {
@@ -98,7 +98,6 @@ export default function GamePage() {
   return (
     <div className="pb-24 min-h-screen bg-joy-blue relative overflow-hidden">
       
-      {/* CLAIM MODAL */}
       <AnimatePresence>
         {selectedBox && (
             <motion.div 
@@ -167,12 +166,10 @@ export default function GamePage() {
         )}
       </AnimatePresence>
 
-      {/* BACKGROUND DECORATION */}
       <div className="absolute top-10 left-10 text-white/20"><Star size={40} /></div>
       <div className="absolute top-40 right-10 text-white/10"><Star size={60} /></div>
       <div className="absolute bottom-0 w-full h-32 bg-joy-green rounded-t-[50px] z-0" />
 
-      {/* HEADER */}
       <header className="p-4 flex items-center justify-between sticky top-0 z-50">
         <Link href="/">
            <button className="p-2 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/30 transition-colors text-white">
@@ -184,7 +181,6 @@ export default function GamePage() {
         </div>
       </header>
 
-      {/* THE BOARD GAME */}
       <div className="relative z-10 px-4 py-4 flex flex-col gap-4 pb-40 mt-4">
         
         {rows.map((row, rowIndex) => (
@@ -194,7 +190,6 @@ export default function GamePage() {
                     const isCurrent = stepNumber === CURRENT_STEP;
                     const hasBox = MYSTERY_BOXES.includes(stepNumber);
                     
-                    // Box Logic
                     const isBoxClaimed = claimedBoxList.includes(stepNumber);
                     const canClaimBox = hasBox && isReached && !isBoxClaimed;
 
@@ -241,7 +236,6 @@ export default function GamePage() {
             </div>
         ))}
 
-        {/* Start Label */}
         <div className="text-center">
              <div className="inline-block text-white/80 font-bold text-sm bg-white/10 px-6 py-2 rounded-full border border-white/20">
                 START PERJALANAN 🏁
