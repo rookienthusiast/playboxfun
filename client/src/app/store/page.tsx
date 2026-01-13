@@ -2,7 +2,6 @@
 
 import { useUser } from '@/context/UserContext';
 import { ArrowLeft, Check, Lock, ShoppingBag, Info, Shirt, Scissors, Glasses, Palette } from 'lucide-react';
-import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -167,11 +166,12 @@ export default function StorePage() {
       
       <header className="bg-white p-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
         <div className="flex items-center gap-3">
-            <Link href="/">
-                <button className="p-2 hover:bg-slate-100 rounded-full text-slate-500">
-                    <ArrowLeft size={24} />
-                </button>
-            </Link>
+            <button
+                onClick={() => router.back()}
+                className="p-2 hover:bg-slate-100 rounded-full text-slate-500"
+            >
+                <ArrowLeft size={24} />
+            </button>
             <h1 className="text-xl font-bold text-slate-700">Fashion Store</h1>
         </div>
         <div className="bg-joy-yellow/10 px-4 py-2 rounded-full flex items-center gap-2 border border-joy-yellow/20">

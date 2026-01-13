@@ -1,9 +1,10 @@
 'use client';
 
 import { useUser } from '@/context/UserContext';
-import { LogOut, Award, User as UserIcon, Monitor, Smartphone, Tablet, Edit2, Check } from 'lucide-react';
+import { LogOut, User as UserIcon, Monitor, Smartphone, Tablet, Edit2, Check, Puzzle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { getCustomAvatarUrl, getEvolutionName, TITLES, getAvatarSeed, calculateLevel, getCurrentTitle } from '@/data/mock';
 import { API_URL } from '@/config';
 
@@ -11,6 +12,7 @@ export default function ProfilePage() {
   const { user, logout, viewMode, setViewMode, updateUser } = useUser();
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
       if (user?.cardUid) {
@@ -71,7 +73,10 @@ export default function ProfilePage() {
       <div className="p-6 space-y-8">
         
         <div className="flex flex-col items-center relative">
-            <div className="w-28 h-28 bg-white rounded-full p-1 shadow-lg border-4 border-joy-blue mb-4 relative group cursor-pointer">
+            <div 
+                className="w-28 h-28 bg-white rounded-full p-1 shadow-lg border-4 border-joy-blue mb-4 relative group cursor-pointer"
+                onClick={() => router.push('/store')}
+            >
                 <div className="w-full h-full bg-slate-200 rounded-full overflow-hidden">
                     <img src={getCustomAvatarUrl(user)} alt="Avatar" referrerPolicy="no-referrer" />
                 </div>
@@ -105,20 +110,48 @@ export default function ProfilePage() {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center">
-                <div className="w-10 h-10 bg-joy-yellow/10 text-joy-yellow rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Award size={20} />
+            <div className="bg-joy-yellow-light p-4 rounded-2xl flex flex-col justify-between border border-joy-yellow/20 relative overflow-hidden">
+                <div className="absolute -right-2 -bottom-2 text-joy-yellow opacity-20 transform rotate-12">
+                    <Puzzle size={48} />
                 </div>
-                <div className="text-xl font-bold text-slate-700">{user.xp}</div>
-                <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total XP</div>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-[10px] font-bold text-joy-orange uppercase tracking-wider mb-1">
+                            Puzzle
+                        </p>
+                        <p className="text-xl font-black text-slate-700">{user.puzzlePieces}</p>
+                    </div>
+                    <div className="bg-white p-2 rounded-full shadow-sm text-joy-orange relative z-10">
+                        <Puzzle size={20} fill="currentColor" />
+                    </div>
+                </div>
+                <p className="mt-2 text-[10px] leading-snug text-joy-orange/80 font-medium">
+                    Koleksi puzzle lewat konsisten menabung untuk membeli karaktermu.
+                </p>
             </div>
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center">
+            <button
+                type="button"
+                onClick={() => router.push('/inventory')}
+                className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center hover:border-joy-green/60 hover:shadow-md transition-all cursor-pointer"
+            >
                 <div className="w-10 h-10 bg-joy-green/10 text-joy-green rounded-full flex items-center justify-center mx-auto mb-2">
                     <UserIcon size={20} />
                 </div>
                 <div className="text-xl font-bold text-slate-700">{user.inventory?.length || 0}</div>
-                <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">Item Fashion</div>
-            </div>
+                <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                    Item Fashion
+                </div>
+                <p className="mt-2 text-[10px] text-joy-green/80 font-medium">
+                    Lihat & ganti item yang sudah kamu miliki
+                </p>
+            </button>
+        </div>
+
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+            <p className="text-xs text-slate-500 leading-relaxed">
+                Puzzle didapat dari konsisten menabung. 
+                Kumpulkan puzzle sebanyak mungkin untuk membeli dan mengganti karaktermu di Toko & Koleksi Item Fashion.
+            </p>
         </div>
 
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">

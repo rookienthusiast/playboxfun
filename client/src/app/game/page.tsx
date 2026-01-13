@@ -21,6 +21,16 @@ export default function GamePage() {
     if (!isLoading && !user) router.push('/login');
   }, [user, isLoading, router]);
 
+  useEffect(() => {
+    // Saat halaman game dibuka, scroll ke bagian bawah papan (dekat START)
+    if (typeof window !== 'undefined') {
+      const anchor = document.getElementById('game-start-anchor');
+      if (anchor) {
+        anchor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, []);
+
   if (isLoading) {
       return (
           <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
@@ -169,6 +179,11 @@ export default function GamePage() {
       <div className="absolute top-10 left-10 text-white/20"><Star size={40} /></div>
       <div className="absolute top-40 right-10 text-white/10"><Star size={60} /></div>
       <div className="absolute bottom-0 w-full h-32 bg-joy-green rounded-t-[50px] z-0" />
+      <div className="absolute bottom-6 inset-x-0 z-10 flex justify-center px-4">
+        <div className="bg-white/90 px-4 py-2 rounded-full text-joy-green font-bold text-sm shadow-md shadow-green-300 text-center">
+          Langkah: {CURRENT_STEP} / {TOTAL_STEPS}
+        </div>
+      </div>
 
       <header className="p-4 flex items-center justify-between sticky top-0 z-50">
         <Link href="/">
@@ -236,10 +251,13 @@ export default function GamePage() {
             </div>
         ))}
 
-        <div className="text-center">
-             <div className="inline-block text-white/80 font-bold text-sm bg-white/10 px-6 py-2 rounded-full border border-white/20">
+        <div className="text-center" id="game-start-anchor">
+            <div className="inline-block text-white/80 font-bold text-sm bg-white/10 px-6 py-2 rounded-full border border-white/20">
                 START PERJALANAN 🏁
             </div>
+            <p className="mt-2 text-xs text-white/80">
+                Ayo menabung lagi agar levelmu nambah!
+            </p>
         </div>
 
       </div>

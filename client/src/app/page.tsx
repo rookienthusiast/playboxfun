@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
-  const { user, isLoggedIn } = useUser();
+  const { user, isLoggedIn, isLoading } = useUser();
   const router = useRouter();
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [showXPInfo, setShowXPInfo] = useState(false);
@@ -20,10 +20,10 @@ export default function Home() {
   const currentTitle = user ? getCurrentTitle(user.balance) : TITLES[0];
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!isLoading && !isLoggedIn) {
         router.push('/login');
     }
-  }, [isLoggedIn, router]);
+  }, [isLoading, isLoggedIn, router]);
 
   useEffect(() => {
     if (user) {
@@ -177,20 +177,25 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-4">
             
             <motion.div 
-                className="bg-joy-yellow-light p-4 rounded-3xl flex items-center justify-between border-2 border-joy-yellow/20 relative overflow-hidden h-full"
+                className="bg-joy-yellow-light p-4 rounded-3xl flex flex-col justify-between border-2 border-joy-yellow/20 relative overflow-hidden h-full"
             >
                 <div className="absolute -right-2 -bottom-2 text-joy-yellow opacity-20 transform rotate-12">
                    <Puzzle size={60} />
                 </div>
-                <div>
-                    <p className="text-xs font-bold text-joy-orange uppercase tracking-wider mb-1 flex items-center gap-1">
-                        Puzzle
-                    </p>
-                    <p className="text-2xl font-black text-slate-700">{user.puzzlePieces}</p>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-xs font-bold text-joy-orange uppercase tracking-wider mb-1 flex items-center gap-1">
+                            Puzzle
+                        </p>
+                        <p className="text-2xl font-black text-slate-700">{user.puzzlePieces}</p>
+                    </div>
+                    <div className="bg-white p-2 rounded-full shadow-sm text-joy-orange relative z-10">
+                        <Puzzle size={24} fill="currentColor" />
+                    </div>
                 </div>
-                <div className="bg-white p-2 rounded-full shadow-sm text-joy-orange relative z-10">
-                    <Puzzle size={24} fill="currentColor" />
-                </div>
+                <p className="mt-3 text-[10px] leading-snug text-joy-orange/80 font-medium max-w-[180px]">
+                    Koleksi puzzle lewat konsisten menabung untuk membeli dan mengubah karaktermu di Toko.
+                </p>
             </motion.div>
 
              <div className="bg-joy-purple-light p-4 rounded-3xl flex items-center justify-between border-2 border-joy-purple/20 relative overflow-hidden">
